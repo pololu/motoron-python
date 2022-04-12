@@ -1,7 +1,7 @@
 import math
 import time
 from smbus2 import SMBus, i2c_msg
-from motoron_protocol import Motoron
+from motoron_protocol import *
 
 class MotoronI2C():
   """
@@ -9,13 +9,13 @@ class MotoronI2C():
   """
 
   DEFAULT_PROTOCOL_OPTIONS = (
-    (1 << Motoron.PROTOCOL_OPTION_I2C_GENERAL_CALL) |
-    (1 << Motoron.PROTOCOL_OPTION_CRC_FOR_COMMANDS) |
-    (1 << Motoron.PROTOCOL_OPTION_CRC_FOR_RESPONSES))
+    (1 << PROTOCOL_OPTION_I2C_GENERAL_CALL) |
+    (1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS) |
+    (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
 
   DEFAULT_ERROR_MASK = (
-    (1 << Motoron.STATUS_FLAG_COMMAND_TIMEOUT) |
-    (1 << Motoron.STATUS_FLAG_RESET))
+    (1 << STATUS_FLAG_COMMAND_TIMEOUT) |
+    (1 << STATUS_FLAG_RESET))
 
   def __init__(self, address=16):
     """
@@ -55,7 +55,7 @@ class MotoronI2C():
     For more information, see the "Get firwmare version"
     command in the Motoron user's guide.
     """
-    cmd = [Motoron.CMD_GET_FIRMWARE_VERSION]
+    cmd = [CMD_GET_FIRMWARE_VERSION]
     response = self.__send_command_and_read_response(cmd, 4)
     return dict(
       product_id = response[0] | (response[1] << 8),
@@ -105,7 +105,7 @@ class MotoronI2C():
     """
     self.protocol_options = options
     cmd = [
-      Motoron.CMD_SET_PROTOCOL_OPTIONS,
+      CMD_SET_PROTOCOL_OPTIONS,
       options & 0x7F,
       ~options & 0x7F
     ]
@@ -128,58 +128,58 @@ class MotoronI2C():
      Enables CRC for commands and responses.  See set_protocol_options().
     """
     self.set_protocol_options(self.protocol_options
-      | (1 << Motoron.PROTOCOL_OPTION_CRC_FOR_COMMANDS)
-      | (1 << Motoron.PROTOCOL_OPTION_CRC_FOR_RESPONSES))
+      | (1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS)
+      | (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
 
   def disable_crc(self):
     """
      Disables CRC for commands and responses.  See set_protocol_options().
     """
     self.set_protocol_options(self.protocol_options
-      & ~(1 << Motoron.PROTOCOL_OPTION_CRC_FOR_COMMANDS)
-      & ~(1 << Motoron.PROTOCOL_OPTION_CRC_FOR_RESPONSES))
+      & ~(1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS)
+      & ~(1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
 
   def enable_crc_for_commands(self):
     """
     Enables CRC for commands.  See set_protocol_options().
     """
     self.set_protocol_options(self.protocol_options
-      | (1 << Motoron.PROTOCOL_OPTION_CRC_FOR_COMMANDS))
+      | (1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS))
 
   def disable_crc_for_commands(self):
     """
     Disables CRC for commands.  See set_protocol_options().
     """
     self.set_protocol_options(self.protocol_options
-      & ~(1 << Motoron.PROTOCOL_OPTION_CRC_FOR_COMMANDS))
+      & ~(1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS))
 
   def enable_crc_for_responses(self):
     """
     Enables CRC for responses.  See set_protocol_options().
     """
     self.set_protocol_options(self.protocol_options
-      | (1 << Motoron.PROTOCOL_OPTION_CRC_FOR_RESPONSES))
+      | (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
 
   def disable_crc_for_responses(self):
     """
     Disables CRC for responses.  See set_protocol_options().
     """
     self.set_protocol_options(self.protocol_options
-      & ~(1 << Motoron.PROTOCOL_OPTION_CRC_FOR_RESPONSES))
+      & ~(1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
 
   def enable_i2c_general_call(self):
     """
     Enables the I2C general call address.  See set_protocol_options().
     """
     self.set_protocol_options(self.protocol_options
-      | (1 << Motoron.PROTOCOL_OPTION_I2C_GENERAL_CALL))
+      | (1 << PROTOCOL_OPTION_I2C_GENERAL_CALL))
 
   def disable_i2c_general_call(self):
     """
     Disables the I2C general call address.  See set_protocol_options().
     """
     self.set_protocol_options(self.protocol_options
-      & ~(1 << Motoron.PROTOCOL_OPTION_I2C_GENERAL_CALL))
+      & ~(1 << PROTOCOL_OPTION_I2C_GENERAL_CALL))
 
   def read_eeprom(self, offset, length):
     """
@@ -189,7 +189,7 @@ class MotoronI2C():
     Motoron user's guide.
     """
     cmd = [
-      Motoron.CMD_READ_EEPROM,
+      CMD_READ_EEPROM,
       offset & 0x7F,
       length & 0x7F,
     ]
@@ -202,7 +202,7 @@ class MotoronI2C():
     is shorted to GND when it starts up.  It is stored in non-volatile
     EEPROM memory.
     """
-    return self.read_eeprom(Motoron.SETTING_DEVICE_NUMBER, 1)
+    return self.read_eeprom(SETTING_DEVICE_NUMBER, 1)
 
   def write_eeprom(self, offset, value):
     """
@@ -216,7 +216,7 @@ class MotoronI2C():
     Motoron user's guide.
     """
     cmd = [
-      Motoron.CMD_WRITE_EEPROM,
+      CMD_WRITE_EEPROM,
       offset & 0x7F,
       value & 0x7F,
       (value >> 7) & 1,
@@ -241,7 +241,7 @@ class MotoronI2C():
     Motoron user's guide.  Also, see the WriteEEPROM example that comes with
     this library for an example of how to use this method.
     """
-    self.write_eeprom(Motoron.SETTING_DEVICE_NUMBER, number)
+    self.write_eeprom(SETTING_DEVICE_NUMBER, number)
 
   def reinitialize(self):
     """
@@ -254,7 +254,7 @@ class MotoronI2C():
     \sa reset()
     """
     # Always send the reset command with a CRC byte to make it more reliable.
-    cmd = [Motoron.CMD_REINITIALIZE]
+    cmd = [CMD_REINITIALIZE]
     self.__send_command_core(cmd, True)
     self.protocol_options = MotoronI2C.DEFAULT_PROTOCOL_OPTIONS
 
@@ -271,7 +271,7 @@ class MotoronI2C():
 
     \sa reinitialize()
     """
-    cmd = [Motoron.CMD_RESET]
+    cmd = [CMD_RESET]
     self.__send_command_core(cmd, True)
     self.protocol_options = MotoronI2C.DEFAULT_PROTOCOL_OPTIONS
 
@@ -291,7 +291,7 @@ class MotoronI2C():
       from the controller.
     """
     cmd = [
-      Motoron.CMD_GET_VARIABLES,
+      CMD_GET_VARIABLES,
       motor & 0x7F,
       offset & 0x7F,
       length & 0x7F,
@@ -357,8 +357,8 @@ class MotoronI2C():
     whether there is currently a motor fault or a lack of power:
 
     ```{.py}
-    mask = (1 << Motoron.STATUS_FLAG_NO_POWER) | \
-      (1 << Motoron.STATUS_FLAG_MOTOR_FAULTING)
+    mask = (1 << STATUS_FLAG_NO_POWER) | \
+      (1 << STATUS_FLAG_MOTOR_FAULTING)
     if get_status_flags() & mask: # do something
     ```
 
@@ -384,7 +384,7 @@ class MotoronI2C():
     For more information, see the "Status flags" variable in the Motoron
     user's guide.
     """
-    return self.get_var_u16(0, Motoron.VAR_STATUS_FLAGS)
+    return self.get_var_u16(0, VAR_STATUS_FLAGS)
 
   def get_protocol_error_flag(self):
     """
@@ -393,7 +393,7 @@ class MotoronI2C():
     For more information, see the "Status flags" variable in the Motoron
     user's guide.
     """
-    return bool(self.get_status_flags() & (1 << Motoron.STATUS_FLAG_PROTOCOL_ERROR))
+    return bool(self.get_status_flags() & (1 << STATUS_FLAG_PROTOCOL_ERROR))
 
   def get_crc_error_flag(self):
     """
@@ -402,7 +402,7 @@ class MotoronI2C():
     For more information, see the "Status flags" variable in the Motoron
     user's guide.
     """
-    return bool(self.get_status_flags() & (1 << Motoron.STATUS_FLAG_CRC_ERROR))
+    return bool(self.get_status_flags() & (1 << STATUS_FLAG_CRC_ERROR))
 
   def get_command_timeout_latched_flag(self):
     """
@@ -411,7 +411,7 @@ class MotoronI2C():
     For more information, see the "Status flags" variable in the Motoron
     user's guide.
     """
-    return bool(self.get_status_flags() & (1 << Motoron.STATUS_FLAG_COMMAND_TIMEOUT_LATCHED))
+    return bool(self.get_status_flags() & (1 << STATUS_FLAG_COMMAND_TIMEOUT_LATCHED))
 
   def get_motor_fault_latched_flag(self):
     """
@@ -420,7 +420,7 @@ class MotoronI2C():
     For more information, see the "Status flags" variable in the Motoron
     user's guide.
     """
-    return bool(self.get_status_flags() & (1 << Motoron.STATUS_FLAG_MOTOR_FAULT_LATCHED))
+    return bool(self.get_status_flags() & (1 << STATUS_FLAG_MOTOR_FAULT_LATCHED))
 
   def get_no_power_latched_flag(self):
     """
@@ -429,7 +429,7 @@ class MotoronI2C():
     For more information, see the "Status flags" variable in the Motoron
     user's guide.
     """
-    return bool(self.get_status_flags() & (1 << Motoron.STATUS_FLAG_NO_POWER_LATCHED))
+    return bool(self.get_status_flags() & (1 << STATUS_FLAG_NO_POWER_LATCHED))
 
   def get_reset_flag(self):
     """
@@ -445,7 +445,7 @@ class MotoronI2C():
     For more information, see the "Status flags" variable in the Motoron
     user's guide.
     """
-    return bool(self.get_status_flags() & (1 << Motoron.STATUS_FLAG_RESET))
+    return bool(self.get_status_flags() & (1 << STATUS_FLAG_RESET))
 
   def get_motor_faulting_flag(self):
     """
@@ -454,7 +454,7 @@ class MotoronI2C():
     For more information, see the "Status flags" variable in the Motoron
     user's guide.
     """
-    return bool(self.get_status_flags() & (1 << Motoron.STATUS_FLAG_MOTOR_FAULTING))
+    return bool(self.get_status_flags() & (1 << STATUS_FLAG_MOTOR_FAULTING))
 
   def get_no_power_flag(self):
     """
@@ -463,7 +463,7 @@ class MotoronI2C():
     For more information, see the "Status flags" variable in the Motoron
     user's guide.
     """
-    return bool(self.get_status_flags() & (1 << Motoron.STATUS_FLAG_NO_POWER))
+    return bool(self.get_status_flags() & (1 << STATUS_FLAG_NO_POWER))
 
   def get_error_active_flag(self):
     """
@@ -472,7 +472,7 @@ class MotoronI2C():
     For more information, see the "Status flags" variable in the Motoron
     user's guide.
     """
-    return bool(self.get_status_flags() & (1 << Motoron.STATUS_FLAG_ERROR_ACTIVE))
+    return bool(self.get_status_flags() & (1 << STATUS_FLAG_ERROR_ACTIVE))
 
   def get_motor_output_enabled_flag(self):
     """
@@ -481,7 +481,7 @@ class MotoronI2C():
     For more information, see the "Status flags" variable in the Motoron
     user's guide.
     """
-    return bool(self.get_status_flags() & (1 << Motoron.STATUS_FLAG_MOTOR_OUTPUT_ENABLED))
+    return bool(self.get_status_flags() & (1 << STATUS_FLAG_MOTOR_OUTPUT_ENABLED))
 
   def get_motor_driving_flag(self):
     """
@@ -490,7 +490,7 @@ class MotoronI2C():
     For more information, see the "Status flags" variable in the Motoron
     user's guide.
     """
-    return bool(self.get_status_flags() & (1 << Motoron.STATUS_FLAG_MOTOR_DRIVING))
+    return bool(self.get_status_flags() & (1 << STATUS_FLAG_MOTOR_DRIVING))
 
   def get_vin_voltage(self):
     """
@@ -501,7 +501,7 @@ class MotoronI2C():
 
     \sa get_vin_voltage_mv()
     """
-    return self.get_var_u16(0, Motoron.VAR_VIN_VOLTAGE)
+    return self.get_var_u16(0, VAR_VIN_VOLTAGE)
 
   def get_vin_voltage_mv(self, reference_mv):
     """
@@ -526,7 +526,7 @@ class MotoronI2C():
 
     \sa set_command_timeout_milliseconds()
     """
-    return self.get_var_u16(0, Motoron.VAR_COMMAND_TIMEOUT) * 4
+    return self.get_var_u16(0, VAR_COMMAND_TIMEOUT) * 4
 
   def get_error_response(self):
     """
@@ -538,7 +538,7 @@ class MotoronI2C():
 
     \sa set_error_response()
     """
-    return self.get_var_u8(0, Motoron.VAR_ERROR_RESPONSE)
+    return self.get_var_u8(0, VAR_ERROR_RESPONSE)
 
   def get_error_mask(self):
     """
@@ -550,7 +550,7 @@ class MotoronI2C():
 
     \sa set_error_mask()
     """
-    return self.get_var_u16(0, Motoron.VAR_ERROR_MASK)
+    return self.get_var_u16(0, VAR_ERROR_MASK)
 
   def get_jumper_state(self):
     """
@@ -559,7 +559,7 @@ class MotoronI2C():
     For more information, see the "Jumper state" variable in the Motoron
     user's guide
     """
-    return self.get_var_u8(0, Motoron.VAR_JUMPER_STATE)
+    return self.get_var_u8(0, VAR_JUMPER_STATE)
 
   def get_target_speed(self, motor):
     """
@@ -571,7 +571,7 @@ class MotoronI2C():
 
     \sa set_speed(), set_all_speeds(), set_all_speeds_using_buffers()
     """
-    return self.get_var_s16(motor, Motoron.MVAR_TARGET_SPEED)
+    return self.get_var_s16(motor, MVAR_TARGET_SPEED)
 
   def get_target_brake_amount(self, motor):
     """
@@ -582,7 +582,7 @@ class MotoronI2C():
 
     \sa set_target_brake_amount()
     """
-    return self.get_var_u16(motor, Motoron.MVAR_TARGET_BRAKE_AMOUNT)
+    return self.get_var_u16(motor, MVAR_TARGET_BRAKE_AMOUNT)
 
   def get_current_speed(self, motor):
     """
@@ -594,7 +594,7 @@ class MotoronI2C():
 
     \sa set_speed_now(), set_all_speeds_now(), set_all_speeds_now_using_buffers()
     """
-    return self.get_var_s16(motor, Motoron.MVAR_CURRENT_SPEED)
+    return self.get_var_s16(motor, MVAR_CURRENT_SPEED)
 
   def get_buffered_speed(self, motor):
     """
@@ -605,7 +605,7 @@ class MotoronI2C():
 
     \sa set_buffered_speed(), set_all_buffered_speeds()
     """
-    return self.get_var_s16(motor, Motoron.MVAR_BUFFERED_SPEED)
+    return self.get_var_s16(motor, MVAR_BUFFERED_SPEED)
 
   def get_pwm_mode(self, motor):
     """
@@ -616,7 +616,7 @@ class MotoronI2C():
 
     \sa set_pwm_mode()
     """
-    return self.get_var_u8(motor, Motoron.MVAR_PWM_MODE)
+    return self.get_var_u8(motor, MVAR_PWM_MODE)
 
   def get_max_acceleration_forward(self, motor):
     """
@@ -628,7 +628,7 @@ class MotoronI2C():
 
     \sa set_max_acceleration(), set_max_acceleration_forward()
     """
-    return self.get_var_u16(motor, Motoron.MVAR_MAX_ACCEL_FORWARD)
+    return self.get_var_u16(motor, MVAR_MAX_ACCEL_FORWARD)
 
   def get_max_acceleration_reverse(self, motor):
     """
@@ -640,7 +640,7 @@ class MotoronI2C():
 
     \sa set_max_acceleration(), set_max_acceleration_reverse()
     """
-    return self.get_var_u16(motor, Motoron.MVAR_MAX_ACCEL_REVERSE)
+    return self.get_var_u16(motor, MVAR_MAX_ACCEL_REVERSE)
 
   def get_max_deceleration_forward(self, motor):
     """
@@ -652,7 +652,7 @@ class MotoronI2C():
 
     \sa set_max_deceleration(), set_max_deceleration_forward()
     """
-    return self.get_var_u16(motor, Motoron.MVAR_MAX_DECEL_FORWARD)
+    return self.get_var_u16(motor, MVAR_MAX_DECEL_FORWARD)
 
   def get_max_deceleration_reverse(self, motor):
     """
@@ -664,14 +664,14 @@ class MotoronI2C():
 
     \sa set_max_deceleration(), set_max_deceleration_reverse()
     """
-    return self.get_var_u16(motor, Motoron.MVAR_MAX_DECEL_REVERSE)
+    return self.get_var_u16(motor, MVAR_MAX_DECEL_REVERSE)
 
 
 # \cond
 
   # This function is used by Pololu for testing.
   def get_max_deceleration_temporary(self, motor):
-    return self.get_var_u16(motor, Motoron.MVAR_MAX_DECEL_TMP)
+    return self.get_var_u16(motor, MVAR_MAX_DECEL_TMP)
 
 # \endcond
 
@@ -684,7 +684,7 @@ class MotoronI2C():
 
     \sa set_starting_speed(), set_starting_speed_forward()
     """
-    return self.get_var_u16(motor, Motoron.MVAR_STARTING_SPEED_FORWARD)
+    return self.get_var_u16(motor, MVAR_STARTING_SPEED_FORWARD)
 
   def get_starting_speed_reverse(self, motor):
     """
@@ -695,7 +695,7 @@ class MotoronI2C():
 
     \sa set_starting_speed(), set_starting_speed_reverse()
     """
-    return self.get_var_u16(motor, Motoron.MVAR_STARTING_SPEED_REVERSE)
+    return self.get_var_u16(motor, MVAR_STARTING_SPEED_REVERSE)
 
   def get_direction_change_delay_forward(self, motor):
     """
@@ -707,7 +707,7 @@ class MotoronI2C():
 
     \sa set_direction_change_delay(), set_direction_change_delay_forward()
     """
-    return self.get_var_u8(motor, Motoron.MVAR_DIRECTION_CHANGE_DELAY_FORWARD)
+    return self.get_var_u8(motor, MVAR_DIRECTION_CHANGE_DELAY_FORWARD)
 
   def get_direction_change_delay_reverse(self, motor):
     """
@@ -719,7 +719,7 @@ class MotoronI2C():
 
     \sa set_direction_change_delay(), set_direction_change_delay_reverse()
     """
-    return self.get_var_u8(motor, Motoron.MVAR_DIRECTION_CHANGE_DELAY_REVERSE)
+    return self.get_var_u8(motor, MVAR_DIRECTION_CHANGE_DELAY_REVERSE)
 
   def set_variable(self, motor, offset, value):
     """
@@ -738,7 +738,7 @@ class MotoronI2C():
     """
     if value > 0x3FFF: value = 0x3FFF
     cmd = [
-      Motoron.CMD_SET_VARIABLE,
+      CMD_SET_VARIABLE,
       motor & 0x1F,
       offset & 0x7F,
       value & 0x7F,
@@ -757,7 +757,7 @@ class MotoronI2C():
     """
     # Divide by 4, but round up.
     timeout = math.ceil(ms / 4)
-    self.set_variable(0, Motoron.VAR_COMMAND_TIMEOUT, timeout)
+    self.set_variable(0, VAR_COMMAND_TIMEOUT, timeout)
 
   def set_error_response(self, response):
     """
@@ -776,7 +776,7 @@ class MotoronI2C():
 
     \sa get_error_response()
     """
-    self.set_variable(0, Motoron.VAR_ERROR_RESPONSE, response)
+    self.set_variable(0, VAR_ERROR_RESPONSE, response)
 
   def set_error_mask(self, mask):
     """
@@ -788,7 +788,7 @@ class MotoronI2C():
 
     \sa get_error_mask(), get_status_flags()
     """
-    self.set_variable(0, Motoron.VAR_ERROR_MASK, mask)
+    self.set_variable(0, VAR_ERROR_MASK, mask)
 
   def disable_command_timeout(self):
     """
@@ -808,7 +808,7 @@ class MotoronI2C():
 
     \sa set_command_timeout_milliseconds(), set_error_mask()
     """
-    self.set_error_mask(MotoronI2C.DEFAULT_ERROR_MASK & ~(1 << Motoron.STATUS_FLAG_COMMAND_TIMEOUT))
+    self.set_error_mask(MotoronI2C.DEFAULT_ERROR_MASK & ~(1 << STATUS_FLAG_COMMAND_TIMEOUT))
 
   def set_pwm_mode(self, motor, mode):
     """
@@ -831,7 +831,7 @@ class MotoronI2C():
 
     \sa get_pwm_mode(self)
     """
-    self.set_variable(motor, Motoron.MVAR_PWM_MODE, mode)
+    self.set_variable(motor, MVAR_PWM_MODE, mode)
 
   def set_max_acceleration_forward(self, motor, accel):
     """
@@ -843,7 +843,7 @@ class MotoronI2C():
 
     \sa set_max_acceleration(), get_max_acceleration_forward()
     """
-    self.set_variable(motor, Motoron.MVAR_MAX_ACCEL_FORWARD, accel)
+    self.set_variable(motor, MVAR_MAX_ACCEL_FORWARD, accel)
 
   def set_max_acceleration_reverse(self, motor, accel):
     """
@@ -855,7 +855,7 @@ class MotoronI2C():
 
     \sa set_max_acceleration(), get_max_acceleration_reverse()
     """
-    self.set_variable(motor, Motoron.MVAR_MAX_ACCEL_REVERSE, accel)
+    self.set_variable(motor, MVAR_MAX_ACCEL_REVERSE, accel)
 
   def set_max_acceleration(self, motor, accel):
     """
@@ -877,7 +877,7 @@ class MotoronI2C():
 
     \sa set_max_deceleration(), get_max_deceleration_forward()
     """
-    self.set_variable(motor, Motoron.MVAR_MAX_DECEL_FORWARD, decel)
+    self.set_variable(motor, MVAR_MAX_DECEL_FORWARD, decel)
 
   def set_max_deceleration_reverse(self, motor, decel):
     """
@@ -889,7 +889,7 @@ class MotoronI2C():
 
     \sa set_max_deceleration(), get_max_deceleration_reverse()
     """
-    self.set_variable(motor, Motoron.MVAR_MAX_DECEL_REVERSE, decel)
+    self.set_variable(motor, MVAR_MAX_DECEL_REVERSE, decel)
 
   def set_max_deceleration(self, motor, decel):
     """
@@ -911,7 +911,7 @@ class MotoronI2C():
 
     \sa set_starting_speed(), get_starting_speed_forward()
     """
-    self.set_variable(motor, Motoron.MVAR_STARTING_SPEED_FORWARD, speed)
+    self.set_variable(motor, MVAR_STARTING_SPEED_FORWARD, speed)
 
   def set_starting_speed_reverse(self, motor, speed):
     """
@@ -923,7 +923,7 @@ class MotoronI2C():
 
     \sa set_starting_speed(), get_starting_speed_reverse()
     """
-    self.set_variable(motor, Motoron.MVAR_STARTING_SPEED_REVERSE, speed)
+    self.set_variable(motor, MVAR_STARTING_SPEED_REVERSE, speed)
 
   def set_starting_speed(self, motor, speed):
     """
@@ -945,7 +945,7 @@ class MotoronI2C():
 
     \sa set_direction_change_delay(), get_direction_change_delay_forward()
     """
-    self.set_variable(motor, Motoron.MVAR_DIRECTION_CHANGE_DELAY_FORWARD, duration)
+    self.set_variable(motor, MVAR_DIRECTION_CHANGE_DELAY_FORWARD, duration)
 
   def set_direction_change_delay_reverse(self, motor, duration):
     """
@@ -957,7 +957,7 @@ class MotoronI2C():
 
     \sa set_direction_change_delay(), get_direction_change_delay_reverse()
     """
-    self.set_variable(motor, Motoron.MVAR_DIRECTION_CHANGE_DELAY_REVERSE, duration)
+    self.set_variable(motor, MVAR_DIRECTION_CHANGE_DELAY_REVERSE, duration)
 
   def set_direction_change_delay(self, motor, duration):
     """
@@ -978,7 +978,7 @@ class MotoronI2C():
     For more information, see the "Coast now" command in the Motoron
     user's guide.
     """
-    cmd = [Motoron.CMD_COAST_NOW]
+    cmd = [CMD_COAST_NOW]
     self.__send_command(cmd)
 
   def clear_motor_fault(self, flags=0):
@@ -994,7 +994,7 @@ class MotoronI2C():
 
     \sa clear_motor_fault_unconditional(), get_motor_faulting_flag()
     """
-    cmd = [ Motoron.CMD_CLEAR_MOTOR_FAULT, (flags & 0x7F) ]
+    cmd = [ CMD_CLEAR_MOTOR_FAULT, (flags & 0x7F) ]
     self.__send_command(cmd)
 
   def clear_motor_fault_unconditional(self):
@@ -1005,7 +1005,7 @@ class MotoronI2C():
 
     This is a more robust version of clear_motor_fault().
     """
-    self.clear_motor_fault(1 << Motoron.CLEAR_MOTOR_FAULT_UNCONDITIONAL)
+    self.clear_motor_fault(1 << CLEAR_MOTOR_FAULT_UNCONDITIONAL)
 
   def clear_latched_status_flags(self, flags):
     """
@@ -1020,7 +1020,7 @@ class MotoronI2C():
     \sa get_status_flags(), set_latched_status_flags()
     """
     cmd = [
-      Motoron.CMD_CLEAR_LATCHED_STATUS_FLAGS,
+      CMD_CLEAR_LATCHED_STATUS_FLAGS,
       flags & 0x7F,
       (flags >> 7) & 0x7F,
     ]
@@ -1045,7 +1045,7 @@ class MotoronI2C():
 
     \sa clear_latched_status_flags()
     """
-    self.clear_latched_status_flags(1 << Motoron.STATUS_FLAG_RESET)
+    self.clear_latched_status_flags(1 << STATUS_FLAG_RESET)
 
   def set_latched_status_flags(self, flags):
     """
@@ -1060,7 +1060,7 @@ class MotoronI2C():
     \sa get_status_flags(), set_latched_status_flags()
     """
     cmd = [
-      Motoron.CMD_SET_LATCHED_STATUS_FLAGS,
+      CMD_SET_LATCHED_STATUS_FLAGS,
       flags & 0x7F,
       (flags >> 7) & 0x7F,
     ]
@@ -1085,7 +1085,7 @@ class MotoronI2C():
     \sa set_speed_now(), set_all_speeds()
     """
     cmd = [
-      Motoron.CMD_SET_SPEED,
+      CMD_SET_SPEED,
       motor & 0x7F,
       speed & 0x7F,
       (speed >> 7) & 0x7F,
@@ -1103,7 +1103,7 @@ class MotoronI2C():
     \sa set_speed(), set_all_speeds_now()
     """
     cmd = [
-      Motoron.CMD_SET_SPEED_NOW,
+      CMD_SET_SPEED_NOW,
       motor & 0x7F,
       speed & 0x7F,
       (speed >> 7) & 0x7F,
@@ -1125,7 +1125,7 @@ class MotoronI2C():
       set_all_speeds_using_buffers(), set_all_speeds_now_using_buffers()
     """
     cmd = [
-      Motoron.CMD_SET_BUFFERED_SPEED,
+      CMD_SET_BUFFERED_SPEED,
       motor & 0x7F,
       speed & 0x7F,
       (speed >> 7) & 0x7F,
@@ -1144,7 +1144,7 @@ class MotoronI2C():
 
     \sa set_speed(), set_all_speeds_now(), set_all_buffered_speeds()
     """
-    cmd = [Motoron.CMD_SET_ALL_SPEEDS]
+    cmd = [CMD_SET_ALL_SPEEDS]
     for speed in speeds:
       cmd += [
         speed & 0x7F,
@@ -1164,7 +1164,7 @@ class MotoronI2C():
 
     \sa set_speed(), set_speed_now(), set_all_speeds()
     """
-    cmd = [Motoron.CMD_SET_ALL_SPEEDS_NOW]
+    cmd = [CMD_SET_ALL_SPEEDS_NOW]
     for speed in speeds:
       cmd += [
         speed & 0x7F,
@@ -1186,7 +1186,7 @@ class MotoronI2C():
     \sa set_speed(), set_buffered_speed(), set_all_speeds(),
       set_all_speeds_using_buffers(), set_all_speeds_now_using_buffers()
     """
-    cmd = [Motoron.CMD_SET_ALL_BUFFERED_SPEEDS]
+    cmd = [CMD_SET_ALL_BUFFERED_SPEEDS]
     for speed in speeds:
       cmd += [
         speed & 0x7F,
@@ -1204,7 +1204,7 @@ class MotoronI2C():
     \sa set_all_speeds_now_using_buffers(), set_buffered_speed(),
       set_all_buffered_speeds()
     """
-    cmd = [Motoron.CMD_SET_ALL_SPEEDS_USING_BUFFERS]
+    cmd = [CMD_SET_ALL_SPEEDS_USING_BUFFERS]
     self.__send_command(cmd)
 
   def set_all_speeds_now_using_buffers(self):
@@ -1218,7 +1218,7 @@ class MotoronI2C():
     \sa set_all_speeds_using_buffers(), set_buffered_speed(),
       set_all_buffered_speeds()
     """
-    cmd = [Motoron.CMD_SET_ALL_SPEEDS_NOW_USING_BUFFERS]
+    cmd = [CMD_SET_ALL_SPEEDS_NOW_USING_BUFFERS]
     self.__send_command(cmd)
 
   def set_braking(self, motor, amount):
@@ -1243,7 +1243,7 @@ class MotoronI2C():
     \sa set_braking_now(), get_target_brake_amount()
     """
     cmd = [
-      Motoron.CMD_SET_BRAKING,
+      CMD_SET_BRAKING,
       motor & 0x7F,
       amount & 0x7F,
       (amount >> 7) & 0x7F,
@@ -1271,7 +1271,7 @@ class MotoronI2C():
     \sa set_braking(), get_target_brake_amount()
     """
     cmd = [
-      Motoron.CMD_SET_BRAKING_NOW,
+      CMD_SET_BRAKING_NOW,
       motor & 0x7F,
       amount & 0x7F,
       (amount >> 7) & 0x7F,
@@ -1291,29 +1291,29 @@ class MotoronI2C():
 
     \sa disable_command_timeout(), set_command_timeout_milliseconds()
     """
-    cmd = [Motoron.CMD_RESET_COMMAND_TIMEOUT]
+    cmd = [CMD_RESET_COMMAND_TIMEOUT]
     self.__send_command(cmd)
 
   def __send_command_core(self, cmd, send_crc):
     if send_crc:
-      write = i2c_msg.write(self.address, cmd + [Motoron.calculate_crc(cmd)])
+      write = i2c_msg.write(self.address, cmd + [calculate_crc(cmd)])
     else:
       write = i2c_msg.write(self.address, cmd)
     self.bus.i2c_rdwr(write)
 
   def __send_command(self, cmd):
-    send_crc = bool(self.protocol_options & (1 << Motoron.PROTOCOL_OPTION_CRC_FOR_COMMANDS))
+    send_crc = bool(self.protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS))
     self.__send_command_core(cmd, send_crc)
 
   def __read_response(self, length):
-    crc_enabled = bool(self.protocol_options & (1 << Motoron.PROTOCOL_OPTION_CRC_FOR_RESPONSES))
+    crc_enabled = bool(self.protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
     read = i2c_msg.read(self.address, length + crc_enabled)
     self.bus.i2c_rdwr(read)
     response = list(read)
     if crc_enabled:
       crc = response.pop()
-      if crc != Motoron.calculate_crc(response):
-        raise IOError("CRC check failed")
+      if crc != calculate_crc(response):
+        raise RuntimeError("CRC check failed")
     return response
 
   def __send_command_and_read_response(self, cmd, response_length):

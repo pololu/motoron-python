@@ -1,7 +1,7 @@
 import time
-from motoron import MotoronI2C
+import motoron
 
-mc = MotoronI2C()
+mc = motoron.MotoronI2C()
 
 mc.reinitialize()
 mc.disable_crc()
@@ -25,4 +25,3 @@ while True:
 
   mc.set_speed(2, 100)
   mc.set_speed(3, -100)
-
