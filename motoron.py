@@ -1,6 +1,6 @@
 import math
 import time
-from smbus2 import i2c_msg
+from smbus2 import SMBus, i2c_msg
 from motoron_protocol import Motoron
 
 class MotoronI2C():
@@ -24,8 +24,9 @@ class MotoronI2C():
     The `address` parameter specifies the 7-bit I2C address to use, and it
     must match the address that the Motoron is configured to use.
     """
+    self.bus = SMBus(1)
     self.address = address
-    self.protocol_options = type(self).DEFAULT_PROTOCOL_OPTIONS
+    self.protocol_options = MotoronI2C.DEFAULT_PROTOCOL_OPTIONS
 
   def set_bus(self, bus):
     """
@@ -457,7 +458,7 @@ class MotoronI2C():
 
   def get_no_power_flag(self):
     """
-    Returns the "No power" bit from getStatusFlags().
+    Returns the "No power" bit from get_status_flags().
 
     For more information, see the "Status flags" variable in the Motoron
     user's guide.
@@ -509,7 +510,7 @@ class MotoronI2C():
     For more information, see the "VIN voltage" variable in the Motoron
     user's guide.
 
-    \param referenceMv The reference voltage (IOREF), in millivolts.
+    \param reference_mv The reference voltage (IOREF), in millivolts.
       For example, use 3300 for a 3.3 V system or 5000 for a 5 V system.
 
     \sa get_vin_voltage()
@@ -890,7 +891,7 @@ class MotoronI2C():
     """
     self.set_variable(motor, Motoron.MVAR_MAX_DECEL_REVERSE, decel)
 
-  def setMaxDeceleration(self, motor, decel):
+  def set_max_deceleration(self, motor, decel):
     """
     Sets the maximum deceleration of the specified motor (both directions).
 
@@ -920,7 +921,7 @@ class MotoronI2C():
     For more information, see the "Starting speed reverse" variable in the
     Motoron user's guide.
 
-    \sa setStartingSpeed(), getStartingSpeedReverse()
+    \sa set_starting_speed(), get_starting_speed_reverse()
     """
     self.set_variable(motor, Motoron.MVAR_STARTING_SPEED_REVERSE, speed)
 
@@ -1048,7 +1049,7 @@ class MotoronI2C():
 
   def set_latched_status_flags(self, flags):
     """
-    Sets the specified flags in getStatusFlags().
+    Sets the specified flags in get_status_flags().
 
     For each bit in the flags argument that is 1, this command sets the
     corresponding bit in the "Status flags" variable to 1.
