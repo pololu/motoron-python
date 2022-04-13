@@ -52,14 +52,15 @@ class MotoronI2C():
     Sends the "Get firmware version" command to get the device's firmware
     product ID and firmware version numbers.
 
-    For more information, see the "Get firwmare version"
+    For more information, see the "Get firmware version"
     command in the Motoron user's guide.
     """
     cmd = [CMD_GET_FIRMWARE_VERSION]
     response = self.__send_command_and_read_response(cmd, 4)
-    return dict(
-      product_id = response[0] | (response[1] << 8),
-      firmware_version = dict(minor = response[2], major = response[3]))
+    return {
+      'product_id': response[0] | (response[1] << 8),
+      'firmware_version': {'major': response[3], 'minor': response[2]}
+    }
 
   def set_protocol_options(self, options):
     """
@@ -202,14 +203,14 @@ class MotoronI2C():
     is shorted to GND when it starts up.  It is stored in non-volatile
     EEPROM memory.
     """
-    return self.read_eeprom(SETTING_DEVICE_NUMBER, 1)
+    return self.read_eeprom(SETTING_DEVICE_NUMBER, 1)[0]
 
   def write_eeprom(self, offset, value):
     """
     Writes a value to one byte in the Motoron's EEPROM memory.
 
     **Warning: Be careful not to write to the EEPROM in a fast loop. The
-    EEPROM memory of the Motoron’s microcontroller is only rated for
+    EEPROM memory of the Motoron's microcontroller is only rated for
     100,000 erase/write cycles.**
 
     For more information, see the "Write EEPROM" command in the
@@ -234,7 +235,7 @@ class MotoronI2C():
     Writes to the EEPROM device number, changing it to the specified value.
 
     **Warning: Be careful not to write to the EEPROM in a fast loop. The
-    EEPROM memory of the Motoron’s microcontroller is only rated for
+    EEPROM memory of the Motoron's microcontroller is only rated for
     100,000 erase/write cycles.**
 
     For more information, see the "Write EEPROM" command in the
@@ -287,8 +288,6 @@ class MotoronI2C():
       motor-specific variables.
     \param offset The location of the first byte to read.
     \param length How many bytes to read.
-    \param buffer A pointer to an array to store the bytes read
-      from the controller.
     """
     cmd = [
       CMD_GET_VARIABLES,
@@ -319,7 +318,7 @@ class MotoronI2C():
     \param offset The location of the first byte to read.
     """
     buffer = self.get_variables(motor, offset, 2)
-    return int.from_bytes(buffer, byteorder="little", signed=False) # equivalent to `struct.unpack("<H", ...)`
+    return int.from_bytes(buffer, byteorder='little', signed=False) # equivalent to `struct.unpack('<H', ...)`
 
   def get_var_s16(self, motor, offset):
     """
@@ -331,7 +330,7 @@ class MotoronI2C():
     \param offset The location of the first byte to read.
     """
     buffer = self.get_variables(motor, offset, 2)
-    return int.from_bytes(buffer, byteorder="little", signed=True) # equivalent to `struct.unpack("<h", ...)`
+    return int.from_bytes(buffer, byteorder='little', signed=True) # equivalent to `struct.unpack('<h', ...)`
 
   def get_status_flags(self):
     """
@@ -1313,7 +1312,7 @@ class MotoronI2C():
     if crc_enabled:
       crc = response.pop()
       if crc != calculate_crc(response):
-        raise RuntimeError("CRC check failed")
+        raise RuntimeError('CRC check failed')
     return response
 
   def __send_command_and_read_response(self, cmd, response_length):
