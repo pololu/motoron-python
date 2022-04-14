@@ -502,15 +502,16 @@ class MotoronI2C():
     """
     return self.get_var_u16(0, VAR_VIN_VOLTAGE)
 
-  def get_vin_voltage_mv(self, reference_mv):
+  def get_vin_voltage_mv(self, reference_mv=3300):
     """
     Reads the voltage on the Motoron's VIN pin and converts it to millivolts.
 
     For more information, see the "VIN voltage" variable in the Motoron
     user's guide.
 
-    \param reference_mv The reference voltage (IOREF), in millivolts.
-      For example, use 3300 for a 3.3 V system or 5000 for a 5 V system.
+    \param reference_mv The reference voltage (voltage on the 3V3 pin), in
+    millivolts.  This is assumed to be 3300 by default, but you can provide
+    a different value for a more accurate conversion.
 
     \sa get_vin_voltage()
     """
