@@ -8,44 +8,29 @@ class MotoronI2C():
   Represents an I2C connection to a Pololu Motoron Motor Controller.
   """
 
-  DEFAULT_PROTOCOL_OPTIONS = (
+  __DEFAULT_PROTOCOL_OPTIONS = (
     (1 << PROTOCOL_OPTION_I2C_GENERAL_CALL) |
     (1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS) |
     (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
 
+  ## The default value of the Motoron's "Error mask" variable.
   DEFAULT_ERROR_MASK = (
     (1 << STATUS_FLAG_COMMAND_TIMEOUT) |
     (1 << STATUS_FLAG_RESET))
 
-  def __init__(self, address=16):
+  def __init__(self, *, bus=SMBus(1), address=16):
     """
     Creates a new MotoronI2C object to communicate with the Motoron over I2C.
 
-    The `address` parameter specifies the 7-bit I2C address to use, and it
+    \param address` parameter specifies the 7-bit I2C address to use, and it
     must match the address that the Motoron is configured to use.
     """
-    self.bus = SMBus(1)
-    self.address = address
-    self.protocol_options = MotoronI2C.DEFAULT_PROTOCOL_OPTIONS
-
-  def set_bus(self, bus):
-    """
-    Configures this object to use the specified I2C bus.
-    """
+    ## The I2C bus used by this object. The default is `SMBus(1)`, which
+    ## corresponds to `/dev/i2c-1`.
     self.bus = bus
-
-  def set_address(self, address):
-    """
-    Configures this object to use the specified 7-bit I2C address.
-    This must match the address that the Motoron is configured to use.
-    """
+    ## The 7-bit I2C address used by this object. The default is 16.
     self.address = address
-
-  def get_address(self):
-    """
-    Returns the 7-bit I2C address that this object is configured to use.
-    """
-    return self.address
+    self.__protocol_options = MotoronI2C.__DEFAULT_PROTOCOL_OPTIONS
 
   def get_firmware_version(self):
     """
@@ -104,7 +89,7 @@ class MotoronI2C():
       enable_crc_for_responses(), disable_crc_for_responses(),
       enable_i2c_general_call(), disable_i2c_general_call()
     """
-    self.protocol_options = options
+    self.__protocol_options = options
     cmd = [
       CMD_SET_PROTOCOL_OPTIONS,
       options & 0x7F,
@@ -122,13 +107,13 @@ class MotoronI2C():
 
     Most users should use set_protocol_options() instead of this.
     """
-    self.protocol_options = options
+    self.__protocol_options = options
 
   def enable_crc(self):
     """
      Enables CRC for commands and responses.  See set_protocol_options().
     """
-    self.set_protocol_options(self.protocol_options
+    self.set_protocol_options(self.__protocol_options
       | (1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS)
       | (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
 
@@ -136,7 +121,7 @@ class MotoronI2C():
     """
      Disables CRC for commands and responses.  See set_protocol_options().
     """
-    self.set_protocol_options(self.protocol_options
+    self.set_protocol_options(self.__protocol_options
       & ~(1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS)
       & ~(1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
 
@@ -144,42 +129,42 @@ class MotoronI2C():
     """
     Enables CRC for commands.  See set_protocol_options().
     """
-    self.set_protocol_options(self.protocol_options
+    self.set_protocol_options(self.__protocol_options
       | (1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS))
 
   def disable_crc_for_commands(self):
     """
     Disables CRC for commands.  See set_protocol_options().
     """
-    self.set_protocol_options(self.protocol_options
+    self.set_protocol_options(self.__protocol_options
       & ~(1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS))
 
   def enable_crc_for_responses(self):
     """
     Enables CRC for responses.  See set_protocol_options().
     """
-    self.set_protocol_options(self.protocol_options
+    self.set_protocol_options(self.__protocol_options
       | (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
 
   def disable_crc_for_responses(self):
     """
     Disables CRC for responses.  See set_protocol_options().
     """
-    self.set_protocol_options(self.protocol_options
+    self.set_protocol_options(self.__protocol_options
       & ~(1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
 
   def enable_i2c_general_call(self):
     """
     Enables the I2C general call address.  See set_protocol_options().
     """
-    self.set_protocol_options(self.protocol_options
+    self.set_protocol_options(self.__protocol_options
       | (1 << PROTOCOL_OPTION_I2C_GENERAL_CALL))
 
   def disable_i2c_general_call(self):
     """
     Disables the I2C general call address.  See set_protocol_options().
     """
-    self.set_protocol_options(self.protocol_options
+    self.set_protocol_options(self.__protocol_options
       & ~(1 << PROTOCOL_OPTION_I2C_GENERAL_CALL))
 
   def read_eeprom(self, offset, length):
@@ -254,12 +239,12 @@ class MotoronI2C():
 
     \sa reset()
     """
-    # Always send the reset command with a CRC byte to make it more reliable.
+    # Always send the reinitialize command with a CRC byte to make it more reliable.
     cmd = [CMD_REINITIALIZE]
     self.__send_command_core(cmd, True)
-    self.protocol_options = MotoronI2C.DEFAULT_PROTOCOL_OPTIONS
+    self.__protocol_options = MotoronI2C.__DEFAULT_PROTOCOL_OPTIONS
 
-  def reset(self):
+  def reset(self, ignore_nack=True):
     """
     Sends a "Reset" command to the Motoron, which does a full hardware reset.
 
@@ -270,11 +255,24 @@ class MotoronI2C():
     After running this command, we recommend waiting for at least 5
     milliseconds before you try to communicate with the Motoron.
 
+    \param ignore_nack Optional argument: if `True` (the default), this method
+      ignores a NACK error if it occurs on sending the Reset command. This is
+      useful in case the Motoron has CRC off and executes the reset before it
+      can ACK the CRC byte (which this method always sends to make it more
+      reliable).
+
     \sa reinitialize()
     """
+    # Always send the reset command with a CRC byte to make it more reliable.
     cmd = [CMD_RESET]
-    self.__send_command_core(cmd, True)
-    self.protocol_options = MotoronI2C.DEFAULT_PROTOCOL_OPTIONS
+    try:
+      self.__send_command_core(cmd, True)
+    except OSError as e:
+      # Errno 5 (Input/output error) indicates a NACK of a data byte.
+      # Ignore it if the ignore_nack argument is True. In all other cases,
+      # re-raise the exception.
+      if not (ignore_nack and e.args[0] == 5): raise
+    self.__protocol_options = MotoronI2C.__DEFAULT_PROTOCOL_OPTIONS
 
   def get_variables(self, motor, offset, length):
     """
@@ -1302,11 +1300,11 @@ class MotoronI2C():
     self.bus.i2c_rdwr(write)
 
   def __send_command(self, cmd):
-    send_crc = bool(self.protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS))
+    send_crc = bool(self.__protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS))
     self.__send_command_core(cmd, send_crc)
 
   def __read_response(self, length):
-    crc_enabled = bool(self.protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
+    crc_enabled = bool(self.__protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
     read = i2c_msg.read(self.address, length + crc_enabled)
     self.bus.i2c_rdwr(read)
     response = list(read)
