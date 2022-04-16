@@ -22,8 +22,11 @@ class MotoronI2C():
     """
     Creates a new MotoronI2C object to communicate with the Motoron over I2C.
 
-    \param address` parameter specifies the 7-bit I2C address to use, and it
-    must match the address that the Motoron is configured to use.
+    \param bus Optional argument that specifies the I2C bus to use. The default
+      bus is `SMBus(1)`, which corresponds to `/dev/i2c-1`.
+    \param address Optional argument that specifies the 7-bit I2C address to
+      use.  This must match the address that the Motoron is configured to use.
+      The default address is 16.
     """
     ## The I2C bus used by this object. The default is `SMBus(1)`, which
     ## corresponds to `/dev/i2c-1`.
@@ -354,9 +357,9 @@ class MotoronI2C():
     whether there is currently a motor fault or a lack of power:
 
     ```{.py}
-    mask = (1 << STATUS_FLAG_NO_POWER) | \
-      (1 << STATUS_FLAG_MOTOR_FAULTING)
-    if get_status_flags() & mask: # do something
+    mask = ((1 << STATUS_FLAG_NO_POWER) |
+      (1 << STATUS_FLAG_MOTOR_FAULTING))
+    if mc.get_status_flags() & mask: # do something
     ```
 
     This library has helper methods that make it easier if you just want to
@@ -507,9 +510,10 @@ class MotoronI2C():
     For more information, see the "VIN voltage" variable in the Motoron
     user's guide.
 
-    \param reference_mv The reference voltage (voltage on the 3V3 pin), in
-    millivolts.  This is assumed to be 3300 by default, but you can provide
-    a different value for a more accurate conversion.
+    \param reference_mv Optional argument that specifies the reference voltage
+      (voltage on the 3V3 pin), in millivolts.  This is assumed to be 3300 by
+      default, but you can provide a different value for a more accurate
+      conversion.
 
     \sa get_vin_voltage()
     """
@@ -1136,6 +1140,17 @@ class MotoronI2C():
 
     This is equivalent to calling set_speed() once for each motor, but it is
     more efficient because all of the speeds are sent in the same command.
+
+    There are a few different ways you can call this method:
+
+    ```{.py}
+    # with separate arguments
+    mc.set_all_speeds(100, -200, 300)
+
+    # with arguments unpacked from a list
+    speeds = [-400, 500, -600]
+    mc.set_all_speeds(*speeds)
+    ```
 
     For more information, see the "Set all speeds" command in the Motoron
     user's guide.
