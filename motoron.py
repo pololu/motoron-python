@@ -42,6 +42,11 @@ class MotoronI2C():
 
     For more information, see the "Get firmware version"
     command in the Motoron user's guide.
+
+    \return A dictionary in this format:
+    ```{.py}
+    {'product_id': 204, 'firmware_version': {'major': 1, 'minor': 0}}
+    ```
     """
     cmd = [CMD_GET_FIRMWARE_VERSION]
     response = self.__send_command_and_read_response(cmd, 4)
