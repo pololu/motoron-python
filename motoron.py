@@ -18,19 +18,21 @@ class MotoronI2C():
     (1 << STATUS_FLAG_COMMAND_TIMEOUT) |
     (1 << STATUS_FLAG_RESET))
 
-  def __init__(self, *, bus=SMBus(1), address=16):
+  def __init__(self, *, bus=1, address=16):
     """
     Creates a new MotoronI2C object to communicate with the Motoron over I2C.
 
-    \param bus Optional argument that specifies the I2C bus to use. The default
-      bus is `SMBus(1)`, which corresponds to `/dev/i2c-1`.
+    \param bus Optional argument that specifies which I2C bus to use.
+      This can be an integer, an SMBus object from the smbus2 package, or an
+      object with an interface similar to SMBus.
+      The default bus is 1, which corresponds to `/dev/i2c-1`.
     \param address Optional argument that specifies the 7-bit I2C address to
       use.  This must match the address that the Motoron is configured to use.
       The default address is 16.
     """
     ## The I2C bus used by this object. The default is `SMBus(1)`, which
     ## corresponds to `/dev/i2c-1`.
-    self.bus = bus
+    self.bus = SMBus(bus) if isinstance(bus, int) else bus
     ## The 7-bit I2C address used by this object. The default is 16.
     self.address = address
     self.__protocol_options = MotoronI2C.__DEFAULT_PROTOCOL_OPTIONS
