@@ -40,7 +40,7 @@ def scan_address(address):
     mc.bus.i2c_rdwr(i2c_msg.write(address, []))
     return True
   except OSError as e:
-    if e.args[0] == 6: return False
+    if e.args[0] == 6 or e.args[0] == 121: return False
     raise
 
 def assign_address(line):
@@ -119,9 +119,6 @@ def process_input_line(line):
   elif line[0] == 'i': identify_devices()
   elif line[0] == 'h' or line[0] == 'H' or line[0] == '?': print(help_message)
   else: print("Error: Unreocgnized command.  Type h for help.")
-
-print(scan_address(18), scan_address(44))
-exit(0)
 
 try:
   while True:

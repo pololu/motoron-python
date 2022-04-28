@@ -278,10 +278,10 @@ class MotoronI2C():
     try:
       self.__send_command_core(cmd, True)
     except OSError as e:
-      # Errno 5 (Input/output error) indicates a NACK of a data byte.
-      # Ignore it if the ignore_nack argument is True. In all other cases,
-      # re-raise the exception.
-      if not (ignore_nack and e.args[0] == 5): raise
+      # Errno 5 (Input/output error) or 121 (Remote I/O error) indicates a
+      # NACK of a data byte.  Ignore it if the ignore_nack argument is True.
+      # In all other cases, re-raise the exception.
+      if not (ignore_nack and (e.args[0] == 5 or e.args[0] == 121)): raise
     self.__protocol_options = MotoronI2C.__DEFAULT_PROTOCOL_OPTIONS
 
   def get_variables(self, motor, offset, length):
