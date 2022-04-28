@@ -19,11 +19,15 @@ mc.set_max_deceleration(2, 300)
 mc.set_max_acceleration(3, 80)
 mc.set_max_deceleration(3, 300)
 
-while True:
-  if int(time.monotonic() * 1000) & 2048:
-    mc.set_speed(1, 800)
-  else:
-    mc.set_speed(1, -800)
+try:
+  while True:
+    if int(time.monotonic() * 1000) & 2048:
+      mc.set_speed(1, 800)
+    else:
+      mc.set_speed(1, -800)
 
-  mc.set_speed(2, 100)
-  mc.set_speed(3, -100)
+    mc.set_speed(2, 100)
+    mc.set_speed(3, -100)
+
+except KeyboardInterrupt:
+  pass
