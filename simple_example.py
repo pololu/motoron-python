@@ -29,5 +29,7 @@ try:
     mc.set_speed(2, 100)
     mc.set_speed(3, -100)
 
+    time.sleep(0.005)
+
 except KeyboardInterrupt:
   pass

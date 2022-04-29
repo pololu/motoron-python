@@ -108,5 +108,7 @@ try:
     mc4.set_speed(2, -changing_speed)
     mc4.set_speed(3, changing_speed)
 
+    time.sleep(0.005)
+
 except KeyboardInterrupt:
   pass
