@@ -4,12 +4,13 @@
 # Motoron Motor Controllers.
 #
 # The motors will stop but automatically recover if:
-# - Motor power (VIN) is interrupted, or
-# - A temporary motor fault occurs, or
-# - A command timeout occurs.
+# - Motor power (VIN) is interrupted
+# - A temporary motor fault occurs
+# - A command timeout occurs
 #
-# This program will terminate if there is an error communicating with any of
-# the Motorons.
+# This program will terminate if it does not receive an acknowledgment bit from
+# a Motoron for a byte it has written or if any other exception is thrown by
+# the underlying Python I2C library.
 #
 # The motors will stop until you restart this program if any Motoron
 # experiences a reset.
