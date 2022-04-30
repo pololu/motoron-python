@@ -1,12 +1,47 @@
 #!/usr/bin/env python3
 
+# This program is an interactive utility you can use to set the I2C
+# addresses for a single Motoron controller or multiple controllers.
+#
+# When you run this program in an terminal, it prompts you to enter a
+# command.  Type the command you want to run and then press Enter.
+
+help_message = """
+To assign an I2C address to a Motoron, type "a" followed by the address
+(in decimal) while the JMP1 pin of the Motoron you wish to change is
+shorted to GND.  For example, "a7" sets the address of the Motoron to
+decimal 17.
+
+Alternatively, you can type "a" by itself in order to automatically
+to have this program automatically pick an address for you.
+
+To make the Motoron start using its new address, you can reset it by
+power cycling it, driving its RST line low, or by typing "r".
+
+The "s" command does a simple scan of the bus to see which addresses
+have devices responding.  This can help you make sure you have set up
+your I2C bus correctly.
+
+The "i" command goes further, sending extra commands to detect the
+Motoron devices on the bus and print information about them.  Note that
+if there are devices on your I2C bus that are not Motorons, the commands
+sent to those devices might be misinterpreted and cause undesired
+behavior.
+
+The "a" and "r" commands use the I2C general call address (0), so they
+might interfere with other devices that use that address, and they will
+not work if you disabled the general call address on a Motoron.
+"""
+
+start_message = """Motoron Set I2C Addresses Utility
+
+Type "h" for help, "a" followed by a number to assign an address, "r" to reset
+Motorons, "s" to scan, "i" to identify devices, or Ctrl+C to quit.
+"""
+
 import time
 import motoron
 from smbus2 import SMBus, i2c_msg
-
-help_message = """
-TODO: fill this in
-"""
 
 # Make a MotoronI2C object configured to use the general call address (0).
 mc = motoron.MotoronI2C(address=0)
@@ -120,6 +155,7 @@ def process_input_line(line):
   elif line[0] == 'h' or line[0] == 'H' or line[0] == '?': print(help_message)
   else: print("Error: Unreocgnized command.  Type h for help.")
 
+print(start_message)
 try:
   while True:
     process_input_line(input('Enter command: '))
