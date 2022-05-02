@@ -22,21 +22,26 @@ The "s" command does a simple scan of the bus to see which addresses
 have devices responding.  This can help you make sure you have set up
 your I2C bus correctly.
 
-The "i" command goes further, sending extra commands to detect the
-Motoron devices on the bus and print information about them.  Note that
-if there are devices on your I2C bus that are not Motorons, the commands
-sent to those devices might be misinterpreted and cause undesired
-behavior.
+The "i" command goes further, sending extra commands to identify the
+Motoron devices on the bus and print information about them.
 
-The "a" and "r" commands use the I2C general call address (0), so they
-might interfere with other devices that use that address, and they will
-not work if you disabled the general call address on a Motoron.
+Warning: The "i" command sends Motoron commands to every I2C device on
+the bus.  If you have devices on your bus that are not Motorons, this
+could cause undesired behavior.
+
+Warning: The "a" and "r" commands use the I2C general call address (0), so
+they might cause undesired behavior on other devices that use that address.
+Also, they will not work if you disabled the general call address on a
+Motoron.
 """
 
 start_message = """Motoron Set I2C Addresses Utility
 
 Type "h" for help, "a" followed by a number to assign an address, "r" to reset
 Motorons, "s" to scan, "i" to identify devices, or Ctrl+C to quit.
+
+Warning: If you have devices that are not Motorons, these commands could cause
+undesired behavior.  Type "h" for more info.
 """
 
 import time
@@ -135,7 +140,7 @@ def identify_devices():
     try:
       # Multiple Motorons on the same address sending different responses will
       # cause CRC errors but we would like to ignore them.
-      test.disable_crc()
+      test.disable_crc_for_responses()
       v = test.get_firmware_version()
       jumper_state = test.get_jumper_state() & 3
     except OSError:
