@@ -24,14 +24,14 @@ reference_mv = 3300
 min_vin_voltage_mv = 4500
 
 # Define which status flags the Motoron should treat as errors.
-error_mask = \
-  (1 << motoron.STATUS_FLAG_PROTOCOL_ERROR) | \
-  (1 << motoron.STATUS_FLAG_CRC_ERROR) | \
-  (1 << motoron.STATUS_FLAG_COMMAND_TIMEOUT_LATCHED) | \
-  (1 << motoron.STATUS_FLAG_MOTOR_FAULT_LATCHED) | \
-  (1 << motoron.STATUS_FLAG_NO_POWER_LATCHED) | \
-  (1 << motoron.STATUS_FLAG_RESET) | \
-  (1 << motoron.STATUS_FLAG_COMMAND_TIMEOUT)
+error_mask = (
+  (1 << motoron.STATUS_FLAG_PROTOCOL_ERROR) |
+  (1 << motoron.STATUS_FLAG_CRC_ERROR) |
+  (1 << motoron.STATUS_FLAG_COMMAND_TIMEOUT_LATCHED) |
+  (1 << motoron.STATUS_FLAG_MOTOR_FAULT_LATCHED) |
+  (1 << motoron.STATUS_FLAG_NO_POWER_LATCHED) |
+  (1 << motoron.STATUS_FLAG_RESET) |
+  (1 << motoron.STATUS_FLAG_COMMAND_TIMEOUT))
 
 mc.reinitialize()
 mc.clear_reset_flag()
