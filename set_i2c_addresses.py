@@ -44,6 +44,7 @@ Warning: If you have devices that are not Motorons, these commands could cause
 undesired behavior.  Type "h" for more info.
 """
 
+import sys
 import time
 import motoron
 from smbus2 import SMBus, i2c_msg
@@ -158,6 +159,7 @@ def process_input_line(line):
   elif line[0] == 's': scan_for_devices()
   elif line[0] == 'i': identify_devices()
   elif line[0] == 'h' or line[0] == 'H' or line[0] == '?': print(help_message)
+  elif line == 'q' or line == 'quit': sys.exit(0)
   else: print("Error: Unreocgnized command.  Type h for help.")
 
 print(start_message)
