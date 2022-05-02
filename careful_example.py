@@ -6,7 +6,8 @@
 # The motors will stop and this program will terminate if:
 # - Motor power (VIN) is interrupted
 # - A motor fault occurs
-# - A protocol error, CRC error, or other communication error occurs
+# - A protocol error or CRC error occurs
+# - The underlying Python I2C library reports an error
 # - A command timeout occurs
 # - The Motoron experiences a reset
 
@@ -76,9 +77,9 @@ def check_for_problems():
     sys.exit(1)
 
   voltage_mv = mc.get_vin_voltage_mv(reference_mv)
-  if voltage_mv < min_voltage_mv:
+  if voltage_mv < min_vin_voltage_mv:
     mc.reset()
-    print("VIN voltage too low: ", voltage_mv, file=sys.stderr)
+    print("VIN voltage too low:", voltage_mv, file=sys.stderr)
     sys.exit(1)
 
 try:
