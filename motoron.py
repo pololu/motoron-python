@@ -1,3 +1,5 @@
+# Copyright (C) Pololu Corporation.  See LICENSE.txt for details.
+
 import math
 import time
 from smbus2 import SMBus, i2c_msg
