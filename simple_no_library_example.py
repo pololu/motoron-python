@@ -30,10 +30,10 @@ i2c_write([
   # Reset the controller to its default settings using a "Reinitialize" command.
   0x96, 0x74,
 
-  # Disable CRC using a "Set Protocol Options" command.
+  # Disable CRC using a "Set protocol options" command.
   0x8B, 0x04, 0x7B, 0x43,
 
-  # Clear the reset flag.
+  # Clear the reset flag using a "Clear latched status flags" command.
   0xA9, 0x00, 0x04,
 ])
 
@@ -47,10 +47,9 @@ i2c_write([
 # timeout = math.ceil(timeout_ms / 4)
 # i2c_write([0x9C, 0, 5, timeout & 0x7F, (timeout >> 7) & 0x7F])
 
-# Disable the command timeout by using a "Set Variable" command to change
-# the error mask, clearing the bit corresponding to the command timeout.
-# error_mask = (1 << 9)
-# i2c_write([0x9C, 0, 8, error_mask & 0x7F, (error_mask >> 7) & 0x7F])
+# Disable the command timeout by using a "Set variable" command to clear
+# the command timeout bit in the error mask.
+# i2c_write([0x9C, 0, 8, 0, 4])
 
 # Configure motor 1
 set_max_acceleration(1, 140)
