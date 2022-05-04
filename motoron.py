@@ -1328,6 +1328,11 @@ class MotoronI2C():
     self.__send_command_core(cmd, send_crc)
 
   def __read_response(self, length):
+    # On some Raspberry Pis with buggy implementations of I2C clock stretching,
+    # sleeping for 0.5 ms might be necessary in order to give the Motoron time to
+    # prepare its response, so it does not need to stretch the clock.
+    time.sleep(0.0005)
+
     crc_enabled = bool(self.__protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
     read = i2c_msg.read(self.address, length + crc_enabled)
     self.bus.i2c_rdwr(read)
