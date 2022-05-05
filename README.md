@@ -12,15 +12,16 @@ This library does **not** support Python 2.
 
 ## Getting started
 
-To use this library, you will also need to enable I&sup2;C,
-set up the I&sup2;C device permissions properly
+To use this library, you will also need to enable I&sup2;C, figure out
+which I2C bus to use, set up the I&sup2;C device permissions properly
 (so you do not have to use `sudo`), and connect the Motoron to your
 Raspberry Pi's I&sup2;C bus.  If you are not sure how to do those things,
 see the "Getting started" sections of the [Motoron user's guide][guide].
 
-This library depends on Python 3.  To install Python 3 on Raspbian, run:
+This library depends on Python 3 and the easiest way to download the library
+is to use git.  To install these programs on Raspberry Pi OS, run:
 
-    sudo apt-get install python3-dev python3-pip
+    sudo apt-get install git python3-dev python3-pip
 
 This library depends on [smbus2], which you can install by running:
 
@@ -40,6 +41,19 @@ Python programs that have names ending with `_example.py`.
 You can run an example program by typing the path to the example.  For example,
 if you are in the `motoron-rpi` directory, type `./simple_example.py` to run
 that example.
+
+## Troubleshooting
+
+    FileNotFoundError: [Errno 2] No such file or directory: '/dev/i2c-1'
+
+The error message above indicates that I&sup2;C bus 1 was not found.
+For most users, the solution is to run `sudo raspi-config nonint do_i2c 0`
+to enable I&sup2;C bus 1 and then reboot.
+You can see which I&sup2;C busses are enabled by running `ls /dev/i2c*`.
+If you have connected your Motoron to a different I2C bus, you should specify
+the bus number when creating the MotoronI2C object.  For example:
+
+    mc = motoron.MotoronI2C(bus=123)
 
 ## Classes
 
