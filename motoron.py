@@ -5,6 +5,14 @@ import time
 from smbus2 import SMBus, i2c_msg
 from motoron_protocol import *
 
+## \file motoron.py
+##
+## This is the main file for the Motoron Motor Controller Python library for
+## Raspberry Pi.
+##
+## For more information about the library, see the main repository at:
+## https://github.com/pololu/motoron-rpi
+
 class MotoronI2C():
   """
   Represents an I2C connection to a Pololu Motoron Motor Controller.
@@ -89,9 +97,9 @@ class MotoronI2C():
 
     The \p options argument should be 0 or combination of the following
     expressions made using the bitwise or operator (|):
-    - (1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS)
-    - (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES)
-    - (1 << PROTOCOL_OPTION_I2C_GENERAL_CALL)
+    - (1 << motoron.PROTOCOL_OPTION_CRC_FOR_COMMANDS)
+    - (1 << motoron.PROTOCOL_OPTION_CRC_FOR_RESPONSES)
+    - (1 << motoron.PROTOCOL_OPTION_I2C_GENERAL_CALL)
 
     For more information, see the "Set protocol optons"
     command in the Motoron user's guide.
@@ -347,27 +355,27 @@ class MotoronI2C():
     Reads the "Status flags" variable from the Motoron.
 
     The bits in this variable are defined by the STATUS_FLAGS_*
-    macros:
+    constants in the motoron package:
 
-    - STATUS_FLAG_PROTOCOL_ERROR
-    - STATUS_FLAG_CRC_ERROR
-    - STATUS_FLAG_COMMAND_TIMEOUT_LATCHED
-    - STATUS_FLAG_MOTOR_FAULT_LATCHED
-    - STATUS_FLAG_NO_POWER_LATCHED
-    - STATUS_FLAG_RESET
-    - STATUS_FLAG_COMMAND_TIMEOUT
-    - STATUS_FLAG_MOTOR_FAULTING
-    - STATUS_FLAG_NO_POWER
-    - STATUS_FLAG_ERROR_ACTIVE
-    - STATUS_FLAG_MOTOR_OUTPUT_ENABLED
-    - STATUS_FLAG_MOTOR_DRIVING
+    - motoron.STATUS_FLAG_PROTOCOL_ERROR
+    - motoron.STATUS_FLAG_CRC_ERROR
+    - motoron.STATUS_FLAG_COMMAND_TIMEOUT_LATCHED
+    - motoron.STATUS_FLAG_MOTOR_FAULT_LATCHED
+    - motoron.STATUS_FLAG_NO_POWER_LATCHED
+    - motoron.STATUS_FLAG_RESET
+    - motoron.STATUS_FLAG_COMMAND_TIMEOUT
+    - motoron.STATUS_FLAG_MOTOR_FAULTING
+    - motoron.STATUS_FLAG_NO_POWER
+    - motoron.STATUS_FLAG_ERROR_ACTIVE
+    - motoron.STATUS_FLAG_MOTOR_OUTPUT_ENABLED
+    - motoron.STATUS_FLAG_MOTOR_DRIVING
 
     Here is some example code that uses bitwise operators to check
     whether there is currently a motor fault or a lack of power:
 
     ```{.py}
-    mask = ((1 << STATUS_FLAG_NO_POWER) |
-      (1 << STATUS_FLAG_MOTOR_FAULTING))
+    mask = ((1 << motoron.STATUS_FLAG_NO_POWER) |
+      (1 << motoron.STATUS_FLAG_MOTOR_FAULTING))
     if mc.get_status_flags() & mask: # do something
     ```
 
@@ -775,12 +783,13 @@ class MotoronI2C():
     Sets the error response, which defines how the Motoron will
     stop its motors when an error is happening.
 
-    The response parameter should be one of:
+    The response parameter should be one of these constants from the motoron
+    package:
 
-    - ERROR_RESPONSE_COAST
-    - ERROR_RESPONSE_BRAKE
-    - ERROR_RESPONSE_COAST_NOW
-    - ERROR_RESPONSE_BRAKE_NOW
+    - motoron.ERROR_RESPONSE_COAST
+    - motoron.ERROR_RESPONSE_BRAKE
+    - motoron.ERROR_RESPONSE_COAST_NOW
+    - motoron.ERROR_RESPONSE_BRAKE_NOW
 
     For more information, see the "Error response" variable in the Motoron
     user's guide.
@@ -825,17 +834,18 @@ class MotoronI2C():
     """
     Sets the PWM mode for the specified motor.
 
-    The mode parameter should be one of the following:
+    The mode parameter should be one of the following these constants from
+    the motoron package:
 
-    - PWM_MODE_DEFAULT (20 kHz)
-    - PWM_MODE_1_KHZ 1
-    - PWM_MODE_2_KHZ 2
-    - PWM_MODE_4_KHZ 3
-    - PWM_MODE_5_KHZ 4
-    - PWM_MODE_10_KHZ 5
-    - PWM_MODE_20_KHZ 6
-    - PWM_MODE_40_KHZ 7
-    - PWM_MODE_80_KHZ 8
+    - motoron.PWM_MODE_DEFAULT (20 kHz)
+    - motoron.PWM_MODE_1_KHZ 1
+    - motoron.PWM_MODE_2_KHZ 2
+    - motoron.PWM_MODE_4_KHZ 3
+    - motoron.PWM_MODE_5_KHZ 4
+    - motoron.PWM_MODE_10_KHZ 5
+    - motoron.PWM_MODE_20_KHZ 6
+    - motoron.PWM_MODE_40_KHZ 7
+    - motoron.PWM_MODE_80_KHZ 8
 
     For more information, see the "PWM mode" variable in the Motoron user's
     guide.

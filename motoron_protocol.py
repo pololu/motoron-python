@@ -1,3 +1,12 @@
+## \file motoron_protocol.py
+##
+## This file defines the arbitrary constants needed to communicate with a
+## Motoron.  We do not recommend importing this package directly because
+## all of the constants defined in it are available through the `motoron`
+## package.
+##
+## \cond
+
 CMD_GET_FIRMWARE_VERSION = 0x87
 CMD_SET_PROTOCOL_OPTIONS = 0x8B
 CMD_UPDATE_DEVICE_NUMBER = 0x8D
@@ -130,9 +139,11 @@ CRC_TABLE = [
   0x3b, 0x7a, 0x28, 0x69, 0x1d, 0x5c, 0x0e, 0x4f,
 ]
 
+## \endcond
+
 def calculate_crc(buffer):
   """
-  This class method calculates the 7-bit CRC needed for a Motoron
+  This method calculates the 7-bit CRC needed for a Motoron
   command or response.  Most users will not need to use this, since most
   methods in this library automatically append a CRC byte or check
   received CRC bytes when appropriate.
@@ -141,3 +152,4 @@ def calculate_crc(buffer):
   for byte in buffer:
     crc = CRC_TABLE[crc ^ byte]
   return crc
+
