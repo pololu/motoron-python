@@ -4,10 +4,10 @@
 
 ## Summary
 
-This is a Python 3 library that helps interface with
-[Motoron Motor Controllers][motoron] from a Raspberry Pi.
-It should also work on other computers as long as they have Python 3, I&sup2;C
-and the [smbus2] library.
+This is a Python 3 library that helps interface with a
+[Motoron motor controller] ([M3S256] or [M3H256]) using I&sup2;C.
+This library is designed to run on a Raspberry Pi but should also work on
+other computers as long as they have Python 3, I&sup2;C and the [smbus2] library.
 This library does **not** support Python 2.
 
 ## Getting started
@@ -78,7 +78,9 @@ feature using motoron.MotoronI2C.disable_command_timeout.
 
 * 1.0.0 (2022-05-13): Original release.
 
+[Motoron motor controller]: https://pololu.com/motoron
+[M3S256]: https://www.pololu.com/product/5030
+[M3H256]: https://www.pololu.com/product/5033
 [doc]: https://pololu.github.io/motoron-rpi/
 [guide]: https://www.pololu.com/docs/0J84
 [smbus2]: https://pypi.org/project/smbus2/
-[motoron]: https://pololu.com/motoron
