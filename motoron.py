@@ -2,6 +2,7 @@
 
 import math
 import time
+from enum import Enum
 from smbus2 import SMBus, i2c_msg
 from motoron_protocol import *
 
@@ -12,6 +13,12 @@ from motoron_protocol import *
 ##
 ## For more information about the library, see the main repository at:
 ## https://github.com/pololu/motoron-rpi
+
+class MotoronCurrentSenseType(Enum):
+  MOTORON_18V18 = 0b0001
+  MOTORON_24V14 = 0b0101
+  MOTORON_18V20 = 0b1010
+  MOTORON_24V16 = 0b1101
 
 class MotoronI2C():
   """
@@ -740,6 +747,130 @@ class MotoronI2C():
     """
     return self.get_var_u8(motor, MVAR_DIRECTION_CHANGE_DELAY_REVERSE)
 
+  def get_current_limit(self, motor):
+    """
+    Reads the current limit for the specified motor.
+
+    This only works for the high-power Motorons.
+
+    For more information, see the "Current limit" variable in the Motoron user's
+    guide.
+
+    \sa set_current_limit()
+    """
+    return self.get_var_u16(motor, MVAR_CURRENT_LIMIT)
+
+  def get_current_sense_reading(self, motor):
+    """
+    Reads all the results from the last current sense measurement for the
+    specified motor.
+
+    This function reads the "Current sense raw", "Current sense speed", and
+    "Current sense processed" variables from the Motoron using a single
+    command, so the values returned are all guaranteed to be part of the
+    same measurement.
+
+    This only works for the high-power Motorons.
+
+    \sa get_current_sense_raw_and_speed(), get_current_sense_processed_and_speed()
+    """
+    buffer = self.get_variables(motor, MVAR_CURRENT_SENSE_RAW, 6)
+    return {
+      'raw': buffer[0] | (buffer[1] << 8),
+      'speed': buffer[2] | (buffer[3] << 8),
+      'processed': buffer[4] | (buffer[5] << 8)
+    }
+
+  def get_current_sense_raw_and_speed(self, motor):
+    """
+    This is like get_current_sense_reading() but it only reads the raw current
+    sense measurement and the speed.
+
+    This only works for the high-power Motorons.
+    """
+    buffer = self.get_variables(motor, MVAR_CURRENT_SENSE_RAW, 4)
+    return {
+      'raw': buffer[0] | (buffer[1] << 8),
+      'speed': buffer[2] | (buffer[3] << 8)
+    }
+
+  def get_current_sense_processed_and_speed(self, motor):
+    """
+    This is like get_current_sense_reading() but it only reads the processed
+    current sense measurement and the speed.
+
+    This only works for the high-power Motorons.
+    """
+    buffer = self.get_variables(motor, MVAR_CURRENT_SENSE_SPEED, 4)
+    return {
+      'speed': buffer[0] | (buffer[1] << 8),
+      'processed': buffer[2] | (buffer[3] << 8)
+    }
+
+  def get_current_sense_raw(self, motor):
+    """
+    Reads the raw current sense measurement for the specified motor.
+
+    This only works for the high-power Motorons.
+
+    For more information, see the "Current sense raw" variable
+    in the Motoron user's guide.
+
+    \sa get_current_sense_reading()
+    """
+    return self.get_var_u16(motor, MVAR_CURRENT_SENSE_RAW)
+
+
+  def get_current_sense_processed(self, motor):
+    """
+    Reads the processed current sense reading for the specified motor.
+
+    This only works for the high-power Motorons.
+
+    The units of this reading depend on the logic voltage of the Motoron
+    and on the specific model of Motoron that you have, and you can use
+    current_sense_units_milliamps() to calculate the units.
+
+    The accuracy of this reading can be improved by measuring the current
+    sense offset and setting it with set_current_sense_offset().
+    See the "Current sense processed" variable in the Motoron user's guide for
+    or the current_sense_calibrate example for more information.
+
+    Note that this reading will be 0xFFFF if an overflow happens during the
+    calculation due to very high current.
+
+    \sa get_current_sense_processed_and_speed()
+    """
+    return self.get_var_u16(motor, MVAR_CURRENT_SENSE_PROCESSED)
+
+  def get_current_sense_offset(self, motor):
+    """
+    Reads the current sense offset setting.
+
+    This only works for the high-power Motorons.
+
+    For more information, see the "Current sense offset" variable in the
+    Motoron user's guide.
+
+    \sa set_current_sense_offset()
+    """
+    return self.get_var_u8(motor, MVAR_CURRENT_SENSE_OFFSET)
+
+  def get_current_sense_minimum_divisor(self, motor):
+    """
+    Reads the current sense minimum divisor setting and returns it as a speed
+    between 0 and 800.
+
+    This only works for the high-power Motorons.
+
+    For more information, see the "Current sense minimum divisor" variable in
+    the Motoron user's guide.
+
+    \sa set_current_sense_minimum_divisor()
+    """
+    return self.get_var_u8(motor, MVAR_CURRENT_SENSE_MINIMUM_DIVISOR) << 2
+
+
   def set_variable(self, motor, offset, value):
     """
     Configures the Motoron using a "Set variable" command.
@@ -991,6 +1122,65 @@ class MotoronI2C():
     self.set_direction_change_delay_forward(motor, duration)
     self.set_direction_change_delay_reverse(motor, duration)
 
+  def set_current_limit(self, motor, limit):
+    """
+    Sets the current limit for the specified motor.
+
+    This only works for the high-power Motorons.
+
+    The units of the current limit depend on the type of Motoron you have
+    and the logic voltage of your system.  See the "Current limit" variable
+    in the Motoron user's guide for more information, or see
+    calculate_current_limit().
+
+    \sa get_current_limit()
+    """
+    self.set_variable(motor, MVAR_CURRENT_LIMIT, limit)
+
+  def set_current_sense_offset(self, motor, offset):
+    """
+    Sets the current sense offset setting for the specified motor.
+
+    This is one of the settings that determines how current sense
+    readings are processed.  It is supposed to be the value returned by
+    get_current_sense_raw() when motor power is supplied to the Motoron and
+    it is driving its motor outputs at speed 0.
+
+    The current_sense_calibrate example shows how to measure the current
+    sense offsets and load them onto the Motoron using this function.
+
+    If you do not care about measuring motor current, you do not need to
+    set this variable.
+
+    For more information, see the "Current sense offset" variable in the
+    Motoron user's guide.
+
+    This only works for the high-power Motorons.
+
+    \sa get_current_sense_offset()
+    """
+    self.set_variable(motor, MVAR_CURRENT_SENSE_OFFSET, offset)
+
+  def set_current_sense_minimum_divisor(self, motor, speed):
+    """
+    Sets the current sense minimum divisor setting for the specified motor,
+    given a speed between 0 and 800.
+
+    This is one of the settings that determines how current sense
+    readings are processed.
+
+    If you do not care about measuring motor current, you do not need to
+    set this variable.
+
+    For more information, see the "Current sense minimum divisor" variable in
+    the Motoron user's guide.
+
+    This only works for the high-power Motorons.
+
+    \sa get_current_sense_minimum_divisor()
+    """
+    self.set_variable(motor, MVAR_CURRENT_SENSE_MINIMUM_DIVISOR, speed >> 2)
+
   def coast_now(self):
     """
     Sends a "Coast now" command to the Motoron, causing all of the motors to
@@ -1155,12 +1345,17 @@ class MotoronI2C():
 
   def set_all_speeds(self, *speeds):
     """
-    Sets the target speeds of all motors at the same time.
+    Sets the target speeds of all the motors at the same time.
+
+    The number of speed arguments you provide to this function must be equal
+    to the number of motor channels your Motoron has, or else this command
+    might not work.
 
     This is equivalent to calling set_speed() once for each motor, but it is
     more efficient because all of the speeds are sent in the same command.
 
-    There are a few different ways you can call this method:
+    There are a few different ways you can call this method (and the related
+    methods that set speeds for all the motors):
 
     ```{.py}
     # with separate arguments
@@ -1186,7 +1381,11 @@ class MotoronI2C():
 
   def set_all_speeds_now(self, *speeds):
     """
-    Sets the target and currents speeds of all motors at the same time.
+    Sets the target and current speeds of all the motors at the same time.
+
+    The number of speed arguments you provide to this function must be equal
+    to the number of motor channels your Motoron has, or else this command
+    might not work.
 
     This is equivalent to calling set_speed_now() once for each motor, but it is
     more efficient because all of the speeds are sent in the same command.
@@ -1206,7 +1405,11 @@ class MotoronI2C():
 
   def set_all_buffered_speeds(self, *speeds):
     """
-    Sets the buffered speeds of all motors.
+    Sets the buffered speeds of all the motors.
+
+    The number of speed arguments you provide to this function must be equal
+    to the number of motor channels your Motoron has, or else this command
+    might not work.
 
     This command does not immediately cause any change to the motors: it
     stores speed for each motor in the Motoron so they can be used by later
@@ -1356,3 +1559,40 @@ class MotoronI2C():
   def __send_command_and_read_response(self, cmd, response_length):
     self.__send_command(cmd)
     return self.__read_response(response_length)
+
+def calculate_current_limit(milliamps, type, reference_mv, offset):
+  """
+  Calculates a current limit value that can be passed to the Motoron
+  using set_current_limit().
+
+  \param milliamps The desired current limit, in units of mA.
+  \param type Specifies what type of Motoron you are using.  This should be one
+    of the members of the MotoronCurrentSenseType enum.
+  \param reference_mv The reference voltage (IOREF), in millivolts.
+    For example, use 3300 for a 3.3 V system or 5000 for a 5 V system.
+  \param offset The offset of the raw current sense signal for the Motoron
+    channel.  This is the same measurement that you would put into the
+    Motoron's "Current sense offset" variable using set_current_sense_offset(),
+    so see the documentation of that function for more info.
+    The offset is typically 10 for 5 V systems and 15 for 3.3 V systems,
+    (50*1024/reference_mv) but it can vary widely.
+  """
+  if milliamps > 1000000: milliamps = 1000000
+  limit = offset * 125 / 128 + milliamps * 20 / (reference_mv * (type.value & 3))
+  if limit > 1000: limit = 1000
+  return limit
+
+def current_sense_units_milliamps(type, reference_mv):
+  """
+  Calculates the units for the Motoron's current sense reading returned by
+  get_current_sense_processed(), in milliamps.
+
+  To convert a reading from get_current_sense_processed() to milliamps
+  multiply it by the value returned from this function.
+
+  \param type Specifies what type of Motoron you are using.  This should be one
+    of the members of the MotoronCurrentSenseType enum.
+  \param reference_mv The reference voltage (IOREF), in millivolts.
+    For example, use 3300 for a 3.3 V system or 5000 for a 5 V system.
+  """
+  return reference_mv * (type.value & 3) * 25 / 512
