@@ -166,5 +166,6 @@ print(start_message)
 try:
   while True:
     process_input_line(input('Enter command: '))
-except KeyboardInterrupt:
+except (KeyboardInterrupt, EOFError):
   print()
+
