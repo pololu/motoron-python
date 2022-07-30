@@ -10,6 +10,11 @@
 # - The underlying Python I2C library reports an error
 # - A command timeout occurs
 # - The Motoron experiences a reset
+#
+# Note: If your Motoron has fewer than three motor channels, you should remove
+# the commands that operate on the motors your controller does not have.
+# Otherwise, those commands will cause a protocol error.
+
 
 import sys
 import time
@@ -20,7 +25,7 @@ mc = motoron.MotoronI2C()
 # ADC reference voltage
 reference_mv = 3300
 
-# Minimum allowed VIN volteage.  You can raise this to be closer to your power
+# Minimum allowed VIN voltage.  You can raise this to be closer to your power
 # supply's expected voltage.
 min_vin_voltage_mv = 4500
 
