@@ -70,7 +70,7 @@ class MotoronI2C():
     cmd = [CMD_GET_FIRMWARE_VERSION]
     response = self.__send_command_and_read_response(cmd, 4)
     return {
-      'product_id': response[0] | (response[1] << 8),
+      'product_id': int.from_bytes(response[0:2], byteorder='little', signed=False),
       'firmware_version': {'major': response[3], 'minor': response[2]}
     }
 
@@ -776,9 +776,9 @@ class MotoronI2C():
     """
     buffer = self.get_variables(motor, MVAR_CURRENT_SENSE_RAW, 6)
     return {
-      'raw': buffer[0] | (buffer[1] << 8),
+      'raw': int.from_bytes(buffer[0:2], byteorder='little', signed=False),
       'speed': int.from_bytes(buffer[2:4], byteorder='little', signed=True),
-      'processed': buffer[4] | (buffer[5] << 8)
+      'processed': int.from_bytes(buffer[4:6], byteorder='little', signed=False)
     }
 
   def get_current_sense_raw_and_speed(self, motor):
@@ -790,8 +790,8 @@ class MotoronI2C():
     """
     buffer = self.get_variables(motor, MVAR_CURRENT_SENSE_RAW, 4)
     return {
-      'raw': buffer[0] | (buffer[1] << 8),
-      'speed': int.from_bytes(buffer[2:4], byteorder='little', signed=True),
+      'raw': int.from_bytes(buffer[0:2], byteorder='little', signed=False),
+      'speed': int.from_bytes(buffer[2:4], byteorder='little', signed=True)
     }
 
   def get_current_sense_processed_and_speed(self, motor):
@@ -804,7 +804,7 @@ class MotoronI2C():
     buffer = self.get_variables(motor, MVAR_CURRENT_SENSE_SPEED, 4)
     return {
       'speed': int.from_bytes(buffer[0:2], byteorder='little', signed=True),
-      'processed': buffer[2] | (buffer[3] << 8)
+      'processed': int.from_bytes(buffer[2:4], byteorder='little', signed=False)
     }
 
   def get_current_sense_raw(self, motor):
