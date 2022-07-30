@@ -1567,7 +1567,7 @@ def calculate_current_limit(milliamps, type, reference_mv, offset):
 
   \param milliamps The desired current limit, in units of mA.
   \param type Specifies what type of Motoron you are using.  This should be one
-    of the members of the CurrentSenseType enum.
+    of the members of the motoron.CurrentSenseType enum.
   \param reference_mv The reference voltage (IOREF), in millivolts.
     For example, use 3300 for a 3.3 V system or 5000 for a 5 V system.
   \param offset The offset of the raw current sense signal for the Motoron
@@ -1591,7 +1591,7 @@ def current_sense_units_milliamps(type, reference_mv):
   multiply it by the value returned from this function.
 
   \param type Specifies what type of Motoron you are using.  This should be one
-    of the members of the CurrentSenseType enum.
+    of the members of the motoron.CurrentSenseType enum.
   \param reference_mv The reference voltage (IOREF), in millivolts.
     For example, use 3300 for a 3.3 V system or 5000 for a 5 V system.
   """
