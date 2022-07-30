@@ -14,7 +14,7 @@ from motoron_protocol import *
 ## For more information about the library, see the main repository at:
 ## https://github.com/pololu/motoron-rpi
 
-class MotoronCurrentSenseType(Enum):
+class CurrentSenseType(Enum):
   MOTORON_18V18 = 0b0001
   MOTORON_24V14 = 0b0101
   MOTORON_18V20 = 0b1010
@@ -777,7 +777,7 @@ class MotoronI2C():
     buffer = self.get_variables(motor, MVAR_CURRENT_SENSE_RAW, 6)
     return {
       'raw': buffer[0] | (buffer[1] << 8),
-      'speed': buffer[2] | (buffer[3] << 8),
+      'speed': int.from_bytes(buffer[2:4], byteorder='little', signed=True),
       'processed': buffer[4] | (buffer[5] << 8)
     }
 
@@ -791,7 +791,7 @@ class MotoronI2C():
     buffer = self.get_variables(motor, MVAR_CURRENT_SENSE_RAW, 4)
     return {
       'raw': buffer[0] | (buffer[1] << 8),
-      'speed': buffer[2] | (buffer[3] << 8)
+      'speed': int.from_bytes(buffer[2:4], byteorder='little', signed=True),
     }
 
   def get_current_sense_processed_and_speed(self, motor):
@@ -803,7 +803,7 @@ class MotoronI2C():
     """
     buffer = self.get_variables(motor, MVAR_CURRENT_SENSE_SPEED, 4)
     return {
-      'speed': buffer[0] | (buffer[1] << 8),
+      'speed': int.from_bytes(buffer[0:2], byteorder='little', signed=True),
       'processed': buffer[2] | (buffer[3] << 8)
     }
 
@@ -1567,7 +1567,7 @@ def calculate_current_limit(milliamps, type, reference_mv, offset):
 
   \param milliamps The desired current limit, in units of mA.
   \param type Specifies what type of Motoron you are using.  This should be one
-    of the members of the MotoronCurrentSenseType enum.
+    of the members of the CurrentSenseType enum.
   \param reference_mv The reference voltage (IOREF), in millivolts.
     For example, use 3300 for a 3.3 V system or 5000 for a 5 V system.
   \param offset The offset of the raw current sense signal for the Motoron
@@ -1580,7 +1580,7 @@ def calculate_current_limit(milliamps, type, reference_mv, offset):
   if milliamps > 1000000: milliamps = 1000000
   limit = offset * 125 / 128 + milliamps * 20 / (reference_mv * (type.value & 3))
   if limit > 1000: limit = 1000
-  return limit
+  return math.floor(limit)
 
 def current_sense_units_milliamps(type, reference_mv):
   """
@@ -1591,7 +1591,7 @@ def current_sense_units_milliamps(type, reference_mv):
   multiply it by the value returned from this function.
 
   \param type Specifies what type of Motoron you are using.  This should be one
-    of the members of the MotoronCurrentSenseType enum.
+    of the members of the CurrentSenseType enum.
   \param reference_mv The reference voltage (IOREF), in millivolts.
     For example, use 3300 for a 3.3 V system or 5000 for a 5 V system.
   """
