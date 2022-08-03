@@ -5,7 +5,7 @@
 ## Summary
 
 This is a Python 3 library that helps interface with
-[Motoron motor controllers] using I&sup2;C.
+[Motoron motor controllers][motoron] using I&sup2;C.
 
 It supports the following Motorons that were designed for the Raspberry Pi:
 
@@ -90,7 +90,7 @@ feature using motoron.MotoronI2C.disable_command_timeout.
 * 1.1.0 (2022-08-05): Added support for the [M2S] and [M2H] Motorons.
 * 1.0.0 (2022-05-13): Original release.
 
-[Motoron motor controller]: https://pololu.com/motoron
+[motoron]: https://pololu.com/motoron
 [M3S256]: https://www.pololu.com/product/5030
 [M3H256]: https://www.pololu.com/product/5033
 [M2S]: https://www.pololu.com/category/291
