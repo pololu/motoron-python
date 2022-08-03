@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # This example for the Motoron M2H controllers shows how to automatically
 # measure the current sense offsets at startup and load them into the Motoron so
 # that the processed current measurements are more accurate.
