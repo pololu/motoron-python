@@ -91,8 +91,8 @@ feature using motoron.MotoronI2C.disable_command_timeout.
 * 1.0.0 (2022-05-13): Original release.
 
 [motoron]: https://pololu.com/motoron
-[M3S256]: https://www.pololu.com/product/5030
-[M3H256]: https://www.pololu.com/product/5033
+[M3S256]: https://www.pololu.com/category/290
+[M3H256]: https://www.pololu.com/category/292
 [M2S]: https://www.pololu.com/category/291
 [M2H]: https://www.pololu.com/category/293
 [doc]: https://pololu.github.io/motoron-rpi/
