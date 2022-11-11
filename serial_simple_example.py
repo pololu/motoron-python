@@ -9,7 +9,7 @@
 #
 # This program will terminate if it does not receive an acknowledgment bit from
 # the Motoron for a byte it has written or if any other exception is thrown by
-# the underlying Python I2C library.
+# the underlying Python serial library.
 #
 # The motors will stop until you restart this program if the Motoron
 # experiences a reset.
@@ -20,7 +20,8 @@
 import time
 import motoron
 
-mc = motoron.MotoronI2C()
+mc = motoron.MotoronSerial()
+mc.set_port("/dev/ttyS0")
 
 # Reset the controller to its default settings, then disable CRC.  The bytes for
 # each of these commands are shown here in case you want to implement them on

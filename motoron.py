@@ -1,10 +1,14 @@
 # Copyright (C) Pololu Corporation.  See LICENSE.txt for details.
 
 import math
+import os
 import time
 from enum import Enum
-from smbus2 import SMBus, i2c_msg
 from motoron_protocol import *
+
+# TODO: is there any way to get the i2c_msg class from an SMBus object, so
+# we don't have to import it here?
+if os.name != 'nt': from smbus2 import SMBus, i2c_msg
 
 ## \file motoron.py
 ##
@@ -20,9 +24,9 @@ class CurrentSenseType(Enum):
   MOTORON_18V20 = 0b1010
   MOTORON_24V16 = 0b1101
 
-class MotoronI2C():
+class MotoronBase():
   """
-  Represents an I2C connection to a Pololu Motoron Motor Controller.
+  Represents a connection to a Pololu Motoron Motoron Controller.
   """
 
   __DEFAULT_PROTOCOL_OPTIONS = (
@@ -34,25 +38,6 @@ class MotoronI2C():
   DEFAULT_ERROR_MASK = (
     (1 << STATUS_FLAG_COMMAND_TIMEOUT) |
     (1 << STATUS_FLAG_RESET))
-
-  def __init__(self, *, bus=1, address=16):
-    """
-    Creates a new MotoronI2C object to communicate with the Motoron over I2C.
-
-    \param bus Optional argument that specifies which I2C bus to use.
-      This can be an integer, an SMBus object from the smbus2 package, or an
-      object with an interface similar to SMBus.
-      The default bus is 1, which corresponds to `/dev/i2c-1`.
-    \param address Optional argument that specifies the 7-bit I2C address to
-      use.  This must match the address that the Motoron is configured to use.
-      The default address is 16.
-    """
-    ## The I2C bus used by this object. The default is `SMBus(1)`, which
-    ## corresponds to `/dev/i2c-1`.
-    self.bus = SMBus(bus) if isinstance(bus, int) else bus
-    ## The 7-bit I2C address used by this object. The default is 16.
-    self.address = address
-    self.__protocol_options = MotoronI2C.__DEFAULT_PROTOCOL_OPTIONS
 
   def get_firmware_version(self):
     """
@@ -269,7 +254,7 @@ class MotoronI2C():
     # Always send the reinitialize command with a CRC byte to make it more reliable.
     cmd = [CMD_REINITIALIZE]
     self.__send_command_core(cmd, True)
-    self.__protocol_options = MotoronI2C.__DEFAULT_PROTOCOL_OPTIONS
+    self.__protocol_options = MotoronBase.__DEFAULT_PROTOCOL_OPTIONS
 
   def reset(self, ignore_nack=True):
     """
@@ -299,7 +284,7 @@ class MotoronI2C():
       # NACK of a data byte.  Ignore it if the ignore_nack argument is True.
       # In all other cases, re-raise the exception.
       if not (ignore_nack and (e.args[0] == 5 or e.args[0] == 121)): raise
-    self.__protocol_options = MotoronI2C.__DEFAULT_PROTOCOL_OPTIONS
+    self.__protocol_options = MotoronBase.__DEFAULT_PROTOCOL_OPTIONS
 
   def get_variables(self, motor, offset, length):
     """
@@ -959,7 +944,7 @@ class MotoronI2C():
 
     \sa set_command_timeout_milliseconds(), set_error_mask()
     """
-    self.set_error_mask(MotoronI2C.DEFAULT_ERROR_MASK & ~(1 << STATUS_FLAG_COMMAND_TIMEOUT))
+    self.set_error_mask(MotoronBase.DEFAULT_ERROR_MASK & ~(1 << STATUS_FLAG_COMMAND_TIMEOUT))
 
   def set_pwm_mode(self, motor, mode):
     """
@@ -1529,36 +1514,13 @@ class MotoronI2C():
     cmd = [CMD_RESET_COMMAND_TIMEOUT]
     self.__send_command(cmd)
 
-  def __send_command_core(self, cmd, send_crc):
-    if send_crc:
-      write = i2c_msg.write(self.address, cmd + [calculate_crc(cmd)])
-    else:
-      write = i2c_msg.write(self.address, cmd)
-    self.bus.i2c_rdwr(write)
-
   def __send_command(self, cmd):
     send_crc = bool(self.__protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS))
     self.__send_command_core(cmd, send_crc)
 
-  def __read_response(self, length):
-    # On some Raspberry Pis with buggy implementations of I2C clock stretching,
-    # sleeping for 0.5 ms might be necessary in order to give the Motoron time to
-    # prepare its response, so it does not need to stretch the clock.
-    time.sleep(0.0005)
+  def __init__(self):
+    self.__protocol_options = MotoronBase.__DEFAULT_PROTOCOL_OPTIONS
 
-    crc_enabled = bool(self.__protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
-    read = i2c_msg.read(self.address, length + crc_enabled)
-    self.bus.i2c_rdwr(read)
-    response = list(read)
-    if crc_enabled:
-      crc = response.pop()
-      if crc != calculate_crc(response):
-        raise RuntimeError('CRC check failed')
-    return response
-
-  def __send_command_and_read_response(self, cmd, response_length):
-    self.__send_command(cmd)
-    return self.__read_response(response_length)
 
 def calculate_current_limit(milliamps, type, reference_mv, offset):
   """
@@ -1596,3 +1558,105 @@ def current_sense_units_milliamps(type, reference_mv):
     For example, use 3300 for a 3.3 V system or 5000 for a 5 V system.
   """
   return reference_mv * (type.value & 3) * 25 / 512
+
+class MotoronI2C(MotoronBase):
+  """
+  Represents an I2C connection to a Pololu Motoron Motor Controller.
+  """
+
+  def __init__(self, *, bus=1, address=16):
+    """
+    Creates a new MotoronI2C object to communicate with the Motoron over I2C.
+
+    \param bus Optional argument that specifies which I2C bus to use.
+      This can be an integer, an SMBus object from the smbus2 package, or an
+      object with an interface similar to SMBus.
+      The default bus is 1, which corresponds to `/dev/i2c-1`.
+    \param address Optional argument that specifies the 7-bit I2C address to
+      use.  This must match the address that the Motoron is configured to use.
+      The default address is 16.
+    """
+    super().__init__()
+    ## The I2C bus used by this object. The default is `SMBus(1)`, which
+    ## corresponds to `/dev/i2c-1`.
+    self.bus = SMBus(bus) if isinstance(bus, int) else bus
+    ## The 7-bit I2C address used by this object. The default is 16.
+    self.address = address
+
+  def _MotoronBase__send_command_core(self, cmd, send_crc):
+    if send_crc:
+      write = i2c_msg.write(self.address, cmd + [calculate_crc(cmd)])
+    else:
+      write = i2c_msg.write(self.address, cmd)
+    self.bus.i2c_rdwr(write)
+
+  def __read_response(self, length):
+    # On some Raspberry Pis with buggy implementations of I2C clock stretching,
+    # sleeping for 0.5 ms might be necessary in order to give the Motoron time to
+    # prepare its response, so it does not need to stretch the clock.
+    time.sleep(0.0005)
+
+    crc_enabled = bool(self.__protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
+    read = i2c_msg.read(self.address, length + crc_enabled)
+    self.bus.i2c_rdwr(read)
+    response = list(read)
+    if crc_enabled:
+      crc = response.pop()
+      if crc != calculate_crc(response):
+        raise RuntimeError('CRC check failed')
+    return response
+
+  def __send_command_and_read_response(self, cmd, response_length):
+    self.__send_command(cmd)
+    return self.__read_response(response_length)
+
+class MotoronSerial(MotoronBase):
+  """
+  Represents a serial connection to a Pololu Motoron Motor Controller.
+  """
+
+  def __init__(self, *, port=None, device_number=None):
+    super().__init__()
+    self.set_port(port)
+    self.device_number = device_number
+    self.serial_options = 0
+
+  def set_port(self, port):
+    if isinstance(port, str):
+      import serial
+      self.port = serial.Serial(port, 115200, timeout=0.1, write_timeout=0.1)
+    else:
+      self.port = port
+
+  def use_7bit_device_number(self):
+    self.serial_options &= ~(1 << SERIAL_OPTION_14BIT_DEVICE_NUMBER)
+
+  def use_14bit_device_number(self):
+    self.serial_options |= (1 << SERIAL_OPTION_14BIT_DEVICE_NUMBER)
+
+  def expect_8bit_responses(self):
+    self.serial_options &= ~(1 << SERIAL_OPTION_7BIT_RESPONSES)
+
+  def expect_7bit_responses(self):
+    self.serial_options |= (1 << SERIAL_OPTION_7BIT_RESPONSES)
+
+  def _MotoronBase__send_command_core(self, cmd, send_crc):
+    if self.device_number != None:
+      if self.serial_options & (1 << SERIAL_OPTION_14BIT_DEVICE_NUMBER):
+        cmd = [
+          0xAA,
+          self.device_number & 0x7F,
+          self.device_number >> 7 & 0x7F,
+          cmd[0] & 0x7F
+        ] + cmd[1:]
+      else:
+        cmd = [
+          0xAA,
+          self.device_number & 0x7F,
+          cmd[0] & 0x7F
+        ] + cmd[1:]
+
+    if send_crc:
+      cmd = cmd + [calculate_crc(cmd)]
+
+    self.port.write(cmd)
