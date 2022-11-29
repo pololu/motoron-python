@@ -19,7 +19,8 @@ import sys
 import time
 import motoron
 
-mc = motoron.MotoronI2C()
+mc = motoron.MotoronSerial()
+mc.set_port("/dev/ttyS0")
 
 # ADC reference voltage
 reference_mv = 3300
@@ -35,16 +36,17 @@ error_mask = (
   (1 << motoron.STATUS_FLAG_COMMAND_TIMEOUT_LATCHED) |
   (1 << motoron.STATUS_FLAG_MOTOR_FAULT_LATCHED) |
   (1 << motoron.STATUS_FLAG_NO_POWER_LATCHED) |
+  (1 << motoron.STATUS_FLAG_SERIAL_ERROR) |
   (1 << motoron.STATUS_FLAG_RESET) |
   (1 << motoron.STATUS_FLAG_COMMAND_TIMEOUT))
 
 mc.reinitialize()
+
 mc.clear_reset_flag()
 
 # Configure the Motoron to coast the motors while obeying deceleration limits if
 # there is an error.
 mc.set_error_response(motoron.ERROR_RESPONSE_COAST)
-
 mc.set_error_mask(error_mask)
 
 # Use a short command timeout of 100 ms: the Motoron will stop the motors if it

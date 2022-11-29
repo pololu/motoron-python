@@ -39,6 +39,9 @@ class MotoronBase():
     (1 << STATUS_FLAG_COMMAND_TIMEOUT) |
     (1 << STATUS_FLAG_RESET))
 
+  def __init__(self):
+    self.protocol_options = MotoronBase.__DEFAULT_PROTOCOL_OPTIONS
+
   def get_firmware_version(self):
     """
     Sends the "Get firmware version" command to get the device's firmware
@@ -80,7 +83,7 @@ class MotoronBase():
     The general call address is write-only; reading bytes from it is not
     supported.
 
-    By default (self, in this libary and the Motoron itself), CRC for commands and
+    By default (in this libary and the Motoron itself), CRC for commands and
     responses is enabled, and the I2C general call address is enabled.
 
     This method always sends its command with a CRC byte, so it will work
@@ -101,7 +104,7 @@ class MotoronBase():
       enable_crc_for_responses(), disable_crc_for_responses(),
       enable_i2c_general_call(), disable_i2c_general_call()
     """
-    self.__protocol_options = options
+    self.protocol_options = options
     cmd = [
       CMD_SET_PROTOCOL_OPTIONS,
       options & 0x7F,
@@ -119,13 +122,13 @@ class MotoronBase():
 
     Most users should use set_protocol_options() instead of this.
     """
-    self.__protocol_options = options
+    self.protocol_options = options
 
   def enable_crc(self):
     """
      Enables CRC for commands and responses.  See set_protocol_options().
     """
-    self.set_protocol_options(self.__protocol_options
+    self.set_protocol_options(self.protocol_options
       | (1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS)
       | (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
 
@@ -133,7 +136,7 @@ class MotoronBase():
     """
      Disables CRC for commands and responses.  See set_protocol_options().
     """
-    self.set_protocol_options(self.__protocol_options
+    self.set_protocol_options(self.protocol_options
       & ~(1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS)
       & ~(1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
 
@@ -141,42 +144,42 @@ class MotoronBase():
     """
     Enables CRC for commands.  See set_protocol_options().
     """
-    self.set_protocol_options(self.__protocol_options
+    self.set_protocol_options(self.protocol_options
       | (1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS))
 
   def disable_crc_for_commands(self):
     """
     Disables CRC for commands.  See set_protocol_options().
     """
-    self.set_protocol_options(self.__protocol_options
+    self.set_protocol_options(self.protocol_options
       & ~(1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS))
 
   def enable_crc_for_responses(self):
     """
     Enables CRC for responses.  See set_protocol_options().
     """
-    self.set_protocol_options(self.__protocol_options
+    self.set_protocol_options(self.protocol_options
       | (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
 
   def disable_crc_for_responses(self):
     """
     Disables CRC for responses.  See set_protocol_options().
     """
-    self.set_protocol_options(self.__protocol_options
+    self.set_protocol_options(self.protocol_options
       & ~(1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
 
   def enable_i2c_general_call(self):
     """
     Enables the I2C general call address.  See set_protocol_options().
     """
-    self.set_protocol_options(self.__protocol_options
+    self.set_protocol_options(self.protocol_options
       | (1 << PROTOCOL_OPTION_I2C_GENERAL_CALL))
 
   def disable_i2c_general_call(self):
     """
     Disables the I2C general call address.  See set_protocol_options().
     """
-    self.set_protocol_options(self.__protocol_options
+    self.set_protocol_options(self.protocol_options
       & ~(1 << PROTOCOL_OPTION_I2C_GENERAL_CALL))
 
   def read_eeprom(self, offset, length):
@@ -227,6 +230,11 @@ class MotoronBase():
     self.__send_command(cmd)
     time.sleep(0.006)
 
+  def write_eeprom16(self, offset, value):
+    # TODO: documentation
+    self.write_eeprom(offset, value & 0xFF)
+    self.write_eeprom(offset + 1, value >> 8 & 0xFF)
+
   def write_eeprom_device_number(self, number):
     """
     Writes to the EEPROM device number, changing it to the specified value.
@@ -239,7 +247,27 @@ class MotoronBase():
     Motoron user's guide.  Also, see the WriteEEPROM example that comes with
     this library for an example of how to use this method.
     """
-    self.write_eeprom(SETTING_DEVICE_NUMBER, number)
+    self.write_eeprom(SETTING_DEVICE_NUMBER, number & 0x7F)
+    self.write_eeprom(SETTING_DEVICE_NUMBER + 1, number >> 7 & 0x7F)
+
+  def write_eeprom_alternative_device_number(self, number):
+    # TODO: documentation
+    self.write_eeprom(SETTING_ALTERNATIVE_DEVICE_NUMBER, (number & 0x7F) | 0x80)
+    self.write_eeprom(SETTING_ALTERNATIVE_DEVICE_NUMBER + 1, number >> 7 & 0x7F)
+
+  def write_eeprom_disable_alternative_device_number(self):
+    # TODO: documentation
+    self.write_eeprom(SETTING_ALTERNATIVE_DEVICE_NUMBER, 0)
+    self.write_eeprom(SETTING_ALTERNATIVE_DEVICE_NUMBER + 1, 0)
+
+  def write_eeprom_serial_options(self, options):
+    # TODO: documentation
+    self.write_eeprom(SETTING_SERIAL_OPTIONS, options)
+
+  def write_eeprom_baud_rate(self, baud):
+    if (baud < MIN_BAUD_RATE): baud = MIN_BAUD_RATE
+    if (baud > MAX_BAUD_RATE): baud = MAX_BAUD_RATE
+    self.write_eeprom16(SETTING_BAUD_DIVIDER, round(16000000 / baud))
 
   def reinitialize(self):
     """
@@ -254,7 +282,7 @@ class MotoronBase():
     # Always send the reinitialize command with a CRC byte to make it more reliable.
     cmd = [CMD_REINITIALIZE]
     self.__send_command_core(cmd, True)
-    self.__protocol_options = MotoronBase.__DEFAULT_PROTOCOL_OPTIONS
+    self.protocol_options = MotoronBase.__DEFAULT_PROTOCOL_OPTIONS
 
   def reset(self, ignore_nack=True):
     """
@@ -284,7 +312,7 @@ class MotoronBase():
       # NACK of a data byte.  Ignore it if the ignore_nack argument is True.
       # In all other cases, re-raise the exception.
       if not (ignore_nack and (e.args[0] == 5 or e.args[0] == 121)): raise
-    self.__protocol_options = MotoronBase.__DEFAULT_PROTOCOL_OPTIONS
+    self.protocol_options = MotoronBase.__DEFAULT_PROTOCOL_OPTIONS
 
   def get_variables(self, motor, offset, length):
     """
@@ -1515,11 +1543,8 @@ class MotoronBase():
     self.__send_command(cmd)
 
   def __send_command(self, cmd):
-    send_crc = bool(self.__protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS))
+    send_crc = bool(self.protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS))
     self.__send_command_core(cmd, send_crc)
-
-  def __init__(self):
-    self.__protocol_options = MotoronBase.__DEFAULT_PROTOCOL_OPTIONS
 
 
 def calculate_current_limit(milliamps, type, reference_mv, offset):
@@ -1596,17 +1621,17 @@ class MotoronI2C(MotoronBase):
     # prepare its response, so it does not need to stretch the clock.
     time.sleep(0.0005)
 
-    crc_enabled = bool(self.__protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
+    crc_enabled = bool(self.protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
     read = i2c_msg.read(self.address, length + crc_enabled)
     self.bus.i2c_rdwr(read)
     response = list(read)
     if crc_enabled:
       crc = response.pop()
       if crc != calculate_crc(response):
-        raise RuntimeError('CRC check failed')
+        raise RuntimeError('Incorrect CRC received.')
     return response
 
-  def __send_command_and_read_response(self, cmd, response_length):
+  def _MotoronBase__send_command_and_read_response(self, cmd, response_length):
     self.__send_command(cmd)
     return self.__read_response(response_length)
 
@@ -1617,8 +1642,17 @@ class MotoronSerial(MotoronBase):
 
   def __init__(self, *, port=None, device_number=None):
     super().__init__()
+
     self.set_port(port)
+
+    ## The device number that will be included in commands sent by this object.
+    ## The default is None, which means to not send a device number and use the
+    ## compact protocol instead.
     self.device_number = device_number
+
+    ## The serial options used by this object.  This must match the serial
+    ## options in the EEPROM of the Motoron you are communicating with.
+    ## The default is 7-bit device numbers and 8-bit responses.
     self.serial_options = 0
 
   def set_port(self, port):
@@ -1626,6 +1660,7 @@ class MotoronSerial(MotoronBase):
       import serial
       self.port = serial.Serial(port, 115200, timeout=0.1, write_timeout=0.1)
     else:
+      ## The serial port used by this object.  See set_port().
       self.port = port
 
   def use_7bit_device_number(self):
@@ -1660,3 +1695,38 @@ class MotoronSerial(MotoronBase):
       cmd = cmd + [calculate_crc(cmd)]
 
     self.port.write(cmd)
+
+  def __read_response(self, length):
+    crc_enabled = bool(self.protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
+    response_7bit = bool(self.serial_options & (1 << SERIAL_OPTION_7BIT_RESPONSES))
+
+    if response_7bit and length > 7:
+      raise RuntimeError('The Motoron does not support response payloads ' \
+        'longer than 7 bytes in 7-bit response mode.')
+
+    self.port.flush()
+    read_length = length + response_7bit + crc_enabled
+    response = self.port.read(read_length)
+    if len(response) != read_length:
+      print(response)  # tmphax
+      raise RuntimeError('Expected to read {} bytes, got {}.'
+        .format(read_length, len(response)))
+    response = bytearray(response)
+
+    if crc_enabled:
+      crc = response.pop()
+      if crc != calculate_crc(response):
+        print("Response: " + str(response) + " " + str(crc)) # tmphax
+        raise RuntimeError('Incorrect CRC received.')
+
+    if response_7bit:
+      msbs = response.pop()
+      for i in range(length):
+        if msbs & 1: response[i] |= 0x80
+        msbs >>= 1
+
+    return response
+
+  def _MotoronBase__send_command_and_read_response(self, cmd, response_length):
+    self._MotoronBase__send_command(cmd)
+    return self.__read_response(response_length)
