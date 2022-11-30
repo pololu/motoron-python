@@ -8,6 +8,9 @@
 # and it uses the "Multi Device Error Check" command to efficiently check for
 # errors on multiple Motorons.
 #
+# You will need to change the following variables to match your configuration:
+# port, starting_device_number, device_count, motors_per_device, serial_options.
+#
 # Note: If your Motorons have fewer than three motor channels, you should remove
 # the commands that operate on the motors your controller does not have.
 # Otherwise, those commands will cause a protocol error.
@@ -17,25 +20,25 @@ import time
 import motoron
 import serial
 
-# TODO: change this to use the new commands
-
 # TODO: change port to /dev/ttyS0
-# TODO: change baud to 250000
+# TODO: change baud to 115200
 port = serial.Serial("COM6", 250000, timeout=0.1, write_timeout=0.1)
 
-device_numbers = [17, 18, 19]
+starting_device_number = 17
+device_count = 3
 motors_per_device = 2
 
+serial_options = 1 << motoron.SERIAL_OPTION_7BIT_RESPONSES
+serial_options |= 1 << motoron.SERIAL_OPTION_14BIT_DEVICE_NUMBER  # TODO: comment out
+
 mcs = []
-for device_number in device_numbers:
+for device_number in range(starting_device_number, starting_device_number + device_count):
   mc = motoron.MotoronSerial(port=port, device_number=device_number)
-  mc.use_14bit_device_number()  # TODO: comment out
-  mc.expect_7bit_responses()
+  mc.serial_options = serial_options
   mcs.append(mc)
 
 mc_broadcast = motoron.MotoronSerial(port=port)
-mc_broadcast.use_14bit_device_number()  # TODO: comment out
-mc_broadcast.expect_7bit_responses()
+mc_broadcast.serial_options = serial_options
 
 # Define which status flags the Motoron should treat as errors.
 error_mask = (
@@ -65,32 +68,34 @@ def setup_motoron(mc):
   while mc.get_motor_driving_flag(): pass
   mc.clear_motor_fault()
 
-def check_for_problems(mc):
-  time.sleep(0.001)  # workaround for a buggy USB adapter
-  status = mc.get_status_flags()
-  if (status & error_mask):
-    # One of the error flags is set.  The Motoron should already be stopping
-    # the motors.  We send a reset command to be extra careful.
-    mc.reset()
-    print("Controller error from device %d: 0x%x" % (mc.device_number, status),
-      file=sys.stderr)
-    sys.exit(1)
-
 for mc in mcs:
   setup_motoron(mc)
 
-speeds = [0] * len(device_numbers) * motors_per_device
+speeds = [0] * device_count * motors_per_device
 
 try:
   while True:
-    for mc in mcs:
-      check_for_problems(mc)
+    # Check for errors on all the Motorons.
+    device_error_index = mc_broadcast.multi_device_error_check(
+      starting_device_number, device_count)
+    if device_error_index != device_count:
+      mc = mcs[device_error_index]
+      status = mcs[device_error_index].get_status_flags()
+      print("Controller error from device %d: 0x%x" % (mc.device_number, status),
+        file=sys.stderr)
+      mc_broadcast.reset()
+      sys.exit(1)
 
+    # Set the speeds of all the Motorons.
     millis = int(time.monotonic() * 1000)
     for i in range(len(speeds)):
       speeds[i] = 800 if (millis - 512 * i) & 4096 else -800
-    mc_broadcast.multi_device_write(min(device_numbers), len(device_numbers),
-      2 * motors_per_device, motoron.CMD_SET_ALL_SPEEDS, encode_speeds(speeds))
+    mc_broadcast.multi_device_write(starting_device_number, device_count,
+      motoron.CMD_SET_ALL_SPEEDS, encode_speeds(speeds))
 
 except KeyboardInterrupt:
+  mc_broadcast.reset()
   pass
+except Exception:
+  mc_broadcast.reset()
+  raise

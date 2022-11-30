@@ -98,4 +98,8 @@ try:
     time.sleep(0.005)
 
 except KeyboardInterrupt:
+  mc.reset()
   pass
+except Exception:
+  mc.reset()
+  raise
