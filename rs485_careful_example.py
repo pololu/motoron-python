@@ -33,6 +33,10 @@ for device_number in device_numbers:
   mc.expect_7bit_responses()
   mcs.append(mc)
 
+mc_broadcast = motoron.MotoronSerial(port=port)
+mc_broadcast.use_14bit_device_number()  # TODO: comment out
+mc_broadcast.expect_7bit_responses()
+
 # Define which status flags the Motoron should treat as errors.
 error_mask = (
   (1 << motoron.STATUS_FLAG_PROTOCOL_ERROR) |
@@ -43,6 +47,11 @@ error_mask = (
   (1 << motoron.STATUS_FLAG_SERIAL_ERROR) |
   (1 << motoron.STATUS_FLAG_RESET) |
   (1 << motoron.STATUS_FLAG_COMMAND_TIMEOUT))
+
+def encode_speeds(speeds):
+  b = []
+  for speed in speeds: b += [ speed & 0x7F, speed >> 7 & 0x7F ]
+  return b
 
 def setup_motoron(mc):
   mc.reinitialize()
@@ -70,16 +79,18 @@ def check_for_problems(mc):
 for mc in mcs:
   setup_motoron(mc)
 
+speeds = [0] * len(device_numbers) * motors_per_device
+
 try:
   while True:
     for mc in mcs:
       check_for_problems(mc)
-      if int(time.monotonic() * 1000) & 2048:
-        mc.set_speed(1, 800)
-        mc.set_speed(2, -800)
-      else:
-        mc.set_speed(1, -800)
-        mc.set_speed(2, 800)
+
+    millis = int(time.monotonic() * 1000)
+    for i in range(len(speeds)):
+      speeds[i] = 800 if (millis - 512 * i) & 4096 else -800
+    mc_broadcast.multi_device_write(min(device_numbers), len(device_numbers),
+      2 * motors_per_device, motoron.CMD_SET_ALL_SPEEDS, encode_speeds(speeds))
 
 except KeyboardInterrupt:
   pass

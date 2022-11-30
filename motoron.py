@@ -1656,6 +1656,7 @@ class MotoronSerial(MotoronBase):
     self.serial_options = 0
 
   def set_port(self, port):
+    # TODO: documentation
     if isinstance(port, str):
       import serial
       self.port = serial.Serial(port, 115200, timeout=0.1, write_timeout=0.1)
@@ -1663,17 +1664,79 @@ class MotoronSerial(MotoronBase):
       ## The serial port used by this object.  See set_port().
       self.port = port
 
-  def use_7bit_device_number(self):
-    self.serial_options &= ~(1 << SERIAL_OPTION_14BIT_DEVICE_NUMBER)
-
-  def use_14bit_device_number(self):
-    self.serial_options |= (1 << SERIAL_OPTION_14BIT_DEVICE_NUMBER)
+  def expect_7bit_responses(self):
+    # TODO: documentation
+    self.serial_options |= (1 << SERIAL_OPTION_7BIT_RESPONSES)
 
   def expect_8bit_responses(self):
+    # TODO: documentation
     self.serial_options &= ~(1 << SERIAL_OPTION_7BIT_RESPONSES)
 
-  def expect_7bit_responses(self):
-    self.serial_options |= (1 << SERIAL_OPTION_7BIT_RESPONSES)
+  def use_14bit_device_number(self):
+    # TODO: documentation
+    self.serial_options |= (1 << SERIAL_OPTION_14BIT_DEVICE_NUMBER)
+
+  def use_7bit_device_number(self):
+    # TODO: documentation
+    self.serial_options &= ~(1 << SERIAL_OPTION_14BIT_DEVICE_NUMBER)
+
+  def multi_device_write(self, starting_device_number, device_count,
+    bytes_per_device, command_byte, data):
+    # TODO: documentation
+
+    if bytes_per_device > 15:
+      raise RuntimeError('Bytes per device cannot exceed 15.')
+
+    send_crc = bool(self.protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS))
+    device_number_14bit = bool(self.serial_options & (1 << SERIAL_OPTION_14BIT_DEVICE_NUMBER))
+
+    cmd = []
+
+    if device_number_14bit:
+      if device_count < 0 or device_count > 0x3FFF:
+        raise RuntimeError('Invalid device count.')
+      if self.device_number == None:
+        cmd.append(CMD_MULTI_DEVICE_WRITE)
+      else:
+        cmd += [ 0xAA,
+          self.device_number & 0x7F,
+          self.device_number >> 7 & 0x7F,
+          CMD_MULTI_DEVICE_WRITE & 0x7F,
+        ]
+      cmd += [
+        starting_device_number & 0x7F,
+        starting_device_number >> 7 & 0x7F,
+        device_count & 0x7F,
+        device_count >> 7 & 0x7F,
+        bytes_per_device,
+        command_byte & 0x7F,
+      ]
+    else:
+      if device_count < 0 or device_count > 0x7F:
+        raise RuntimeError('Invalid device count.')
+      cmd += [
+        starting_device_number & 0x7F,
+        device_count,
+        bytes_per_device,
+        command_byte & 0x7F,
+      ]
+      if self.device_number == None:
+        cmd.append(CMD_MULTI_DEVICE_WRITE)
+      else:
+        cmd += [ 0xAA,
+          self.device_number & 0x7F,
+          CMD_MULTI_DEVICE_WRITE & 0x7F,
+        ]
+
+    if bytes_per_device:
+      if len(data) != bytes_per_device * device_count:
+        raise RuntimeError('Expected {} bytes of data, got {}.'
+          .format(bytes_per_device * device_count, len(data)))
+      cmd += data
+
+    if send_crc: cmd += [calculate_crc(cmd)]
+
+    self.port.write(cmd)
 
   def _MotoronBase__send_command_core(self, cmd, send_crc):
     if self.device_number != None:
@@ -1692,7 +1755,7 @@ class MotoronSerial(MotoronBase):
         ] + cmd[1:]
 
     if send_crc:
-      cmd = cmd + [calculate_crc(cmd)]
+      cmd += [calculate_crc(cmd)]
 
     self.port.write(cmd)
 
