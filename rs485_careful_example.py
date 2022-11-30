@@ -57,12 +57,14 @@ def setup_motoron(mc):
   mc.clear_motor_fault()
 
 def check_for_problems(mc):
+  time.sleep(0.001)  # workaround for a buggy USB adapter
   status = mc.get_status_flags()
   if (status & error_mask):
     # One of the error flags is set.  The Motoron should already be stopping
     # the motors.  We send a reset command to be extra careful.
     mc.reset()
-    print("Controller error: 0x%x" % status, file=sys.stderr)
+    print("Controller error from device %d: 0x%x" % (mc.device_number, status),
+      file=sys.stderr)
     sys.exit(1)
 
 for mc in mcs:
@@ -72,18 +74,12 @@ try:
   while True:
     for mc in mcs:
       check_for_problems(mc)
-      time.sleep(0.005)
       if int(time.monotonic() * 1000) & 2048:
         mc.set_speed(1, 800)
-        time.sleep(0.005)
         mc.set_speed(2, -800)
-        time.sleep(0.005)
       else:
         mc.set_speed(1, -800)
-        time.sleep(0.005)
         mc.set_speed(2, 800)
-        time.sleep(0.005)
-    time.sleep(0.005)
 
 except KeyboardInterrupt:
   pass

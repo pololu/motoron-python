@@ -1708,7 +1708,6 @@ class MotoronSerial(MotoronBase):
     read_length = length + response_7bit + crc_enabled
     response = self.port.read(read_length)
     if len(response) != read_length:
-      print(response)  # tmphax
       raise RuntimeError('Expected to read {} bytes, got {}.'
         .format(read_length, len(response)))
     response = bytearray(response)
@@ -1716,7 +1715,6 @@ class MotoronSerial(MotoronBase):
     if crc_enabled:
       crc = response.pop()
       if crc != calculate_crc(response):
-        print("Response: " + str(response) + " " + str(crc)) # tmphax
         raise RuntimeError('Incorrect CRC received.')
 
     if response_7bit:
