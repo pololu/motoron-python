@@ -227,7 +227,15 @@ class MotoronBase():
     time.sleep(0.006)
 
   def write_eeprom16(self, offset, value):
-    # TODO: documentation
+    """
+    Writes a 2-byte value in the Motoron's EEPROM memory.
+
+    This command only has an effect if JMP1 is shorted to GND.
+
+    **Warning: Be careful not to write to the EEPROM in a fast loop. The
+    EEPROM memory of the Motoron’s microcontroller is only rated for
+    100,000 erase/write cycles.
+    """
     self.write_eeprom(offset, value & 0xFF)
     self.write_eeprom(offset + 1, value >> 8 & 0xFF)
 
@@ -235,35 +243,93 @@ class MotoronBase():
     """
     Writes to the EEPROM device number, changing it to the specified value.
 
+    This command only has an effect if JMP1 is shorted to GND.
+
     **Warning: Be careful not to write to the EEPROM in a fast loop. The
     EEPROM memory of the Motoron's microcontroller is only rated for
     100,000 erase/write cycles.**
-
-    For more information, see the "Write EEPROM" command in the
-    Motoron user's guide.  Also, see the WriteEEPROM example that comes with
-    this library for an example of how to use this method.
     """
     self.write_eeprom(SETTING_DEVICE_NUMBER, number & 0x7F)
     self.write_eeprom(SETTING_DEVICE_NUMBER + 1, number >> 7 & 0x7F)
 
   def write_eeprom_alternative_device_number(self, number):
-    # TODO: documentation
+    """
+    Writes to the alternative device number stored in EEPROM, changing it to
+    the specified value.
+
+    This function is only useful on Motorons with a serial interface,
+    and only has an effect if JMP1 is shorted to GND.
+
+    **Warning: Be careful not to write to the EEPROM in a fast loop. The
+    EEPROM memory of the Motoron's microcontroller is only rated for
+    100,000 erase/write cycles.**
+
+    \sa write_eeprom_disable_alternative_device_number()
+    """
     self.write_eeprom(SETTING_ALTERNATIVE_DEVICE_NUMBER, (number & 0x7F) | 0x80)
     self.write_eeprom(SETTING_ALTERNATIVE_DEVICE_NUMBER + 1, number >> 7 & 0x7F)
 
   def write_eeprom_disable_alternative_device_number(self):
-    # TODO: documentation
+    """
+    Writes to EEPROM to disable the alternative device number.
+
+    This function is only useful on Motorons with a serial interface,
+    and only has an effect if JMP1 is shorted to GND.
+
+    **Warning: Be careful not to write to the EEPROM in a fast loop. The
+    EEPROM memory of the Motoron's microcontroller is only rated for
+    100,000 erase/write cycles.**
+
+    \sa write_eeprom_alternative_device_number()
+    """
     self.write_eeprom(SETTING_ALTERNATIVE_DEVICE_NUMBER, 0)
     self.write_eeprom(SETTING_ALTERNATIVE_DEVICE_NUMBER + 1, 0)
 
   def write_eeprom_serial_options(self, options):
-    # TODO: documentation
+    """
+    Writes to the serial options byte stored in EEPROM, changing it to
+    the specified value.
+
+    The bits in this byte are defined by the MOTORON_SERIAL_OPTION_* macros.
+
+    This function is only useful on Motorons with a serial interface,
+    and only has an effect if JMP1 is shorted to GND.
+
+    **Warning: Be careful not to write to the EEPROM in a fast loop. The
+    EEPROM memory of the Motoron's microcontroller is only rated for
+    100,000 erase/write cycles.**
+    """
     self.write_eeprom(SETTING_SERIAL_OPTIONS, options)
 
   def write_eeprom_baud_rate(self, baud):
+    """
+    Writes to the baud rate stored in EEPROM, changing it to the
+    specified value.
+
+    This function is only useful on Motorons with a serial interface,
+    and only has an effect if JMP1 is shorted to GND.
+
+    **Warning: Be careful not to write to the EEPROM in a fast loop. The
+    EEPROM memory of the Motoron's microcontroller is only rated for
+    100,000 erase/write cycles.**
+    """
     if (baud < MIN_BAUD_RATE): baud = MIN_BAUD_RATE
     if (baud > MAX_BAUD_RATE): baud = MAX_BAUD_RATE
     self.write_eeprom16(SETTING_BAUD_DIVIDER, round(16000000 / baud))
+
+  def write_eeprom_response_delay(self, delay):
+    """
+    Writes to the serial response delay setting stored in EEPROM, changing
+    it to the specified value, in units of microseconds.
+
+    This function is only useful on Motorons with a serial interface,
+    and only has an effect if JMP1 is shorted to GND.
+
+    **Warning: Be careful not to write to the EEPROM in a fast loop. The
+    EEPROM memory of the Motoron's microcontroller is only rated for
+    100,000 erase/write cycles.**
+    """
+    self.write_eeprom(SETTING_RESPONSE_DELAY, delay)
 
   def reinitialize(self):
     """
