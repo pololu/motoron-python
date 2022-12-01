@@ -6,10 +6,6 @@ import time
 from enum import Enum
 from motoron_protocol import *
 
-# TODO: is there any way to get the i2c_msg class from an SMBus object, so
-# we don't have to import it here?
-if os.name != 'nt': from smbus2 import SMBus, i2c_msg
-
 ## \file motoron.py
 ##
 ## This is the main file for the Motoron Motor Controller Python library for
@@ -1602,17 +1598,21 @@ class MotoronI2C(MotoronBase):
       The default address is 16.
     """
     super().__init__()
+
+    import smbus2
+    self._msg = smbus2.i2c_msg
+
     ## The I2C bus used by this object. The default is `SMBus(1)`, which
     ## corresponds to `/dev/i2c-1`.
-    self.bus = SMBus(bus) if isinstance(bus, int) else bus
+    self.bus = smbus2.SMBus(bus) if isinstance(bus, int) else bus
     ## The 7-bit I2C address used by this object. The default is 16.
     self.address = address
 
   def _MotoronBase__send_command_core(self, cmd, send_crc):
     if send_crc:
-      write = i2c_msg.write(self.address, cmd + [calculate_crc(cmd)])
+      write = self._msg.write(self.address, cmd + [calculate_crc(cmd)])
     else:
-      write = i2c_msg.write(self.address, cmd)
+      write = self._msg.write(self.address, cmd)
     self.bus.i2c_rdwr(write)
 
   def __read_response(self, length):
@@ -1622,7 +1622,7 @@ class MotoronI2C(MotoronBase):
     time.sleep(0.0005)
 
     crc_enabled = bool(self.protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
-    read = i2c_msg.read(self.address, length + crc_enabled)
+    read = self._msg.read(self.address, length + crc_enabled)
     self.bus.i2c_rdwr(read)
     response = list(read)
     if crc_enabled:
