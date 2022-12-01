@@ -20,15 +20,14 @@ import time
 import motoron
 import serial
 
-# port = serial.Serial("/dev/ttyS0", 115200, timeout=0.1, write_timeout=0.1)
-port = serial.Serial("COM6", 250000, timeout=0.1, write_timeout=0.1)
+port = serial.Serial("/dev/ttyS0", 115200, timeout=0.1, write_timeout=0.1)
 
 starting_device_number = 17
 device_count = 3
 motors_per_device = 2
 
 serial_options = 1 << motoron.SERIAL_OPTION_7BIT_RESPONSES
-serial_options |= 1 << motoron.SERIAL_OPTION_14BIT_DEVICE_NUMBER
+# serial_options |= 1 << motoron.SERIAL_OPTION_14BIT_DEVICE_NUMBER
 
 mcs = []
 for device_number in range(starting_device_number, starting_device_number + device_count):
