@@ -1722,7 +1722,12 @@ class MotoronSerial(MotoronBase):
     self.serial_options = 0
 
   def set_port(self, port):
-    # TODO: documentation
+    """
+    Configures this object to use the specified serial port object.
+
+    The port argument can either be the name of a serial port to open
+    (e.g. "COM6" or "/dev/ttyS0") or it can be a Serial object from pyserial.
+    """
     if isinstance(port, str):
       import serial
       self.port = serial.Serial(port, 115200, timeout=0.1, write_timeout=0.1)
@@ -1731,29 +1736,41 @@ class MotoronSerial(MotoronBase):
       self.port = port
 
   def expect_7bit_responses(self):
-    # TODO: documentation
+    """
+    Configures this object to work with Motorons that are configured to send
+    7-bit serial responses.
+    """
     self.serial_options |= (1 << SERIAL_OPTION_7BIT_RESPONSES)
 
   def expect_8bit_responses(self):
-    # TODO: documentation
+    """
+    Configures this object to work with Motorons that are configured to send
+    responses in the normal 8-bit format.
+    """
     self.serial_options &= ~(1 << SERIAL_OPTION_7BIT_RESPONSES)
 
   def use_14bit_device_number(self):
-    # TODO: documentation
+    """
+    Configures this object to send 14-bit device numbers when using the
+    Pololu protocol, instead of the default 7-bit.
+    """
     self.serial_options |= (1 << SERIAL_OPTION_14BIT_DEVICE_NUMBER)
 
   def use_7bit_device_number(self):
-    # TODO: documentation
+    """
+    Configures this object to send 7-bit device numbers, which is the default.
+    """
     self.serial_options &= ~(1 << SERIAL_OPTION_14BIT_DEVICE_NUMBER)
 
-  # Sends a "Multi-device error check" command but does not read any
-  # responses.
-  #
-  # Note: Before using this, most users should make sure the MotoronSerial
-  # object is configured to use the compact protocol: construct the object
-  # without specifying a device number, or set device_number to None.
   def multi_device_error_check_start(self, starting_device_number, device_count):
-    # TODO: documentation
+    """
+    Sends a "Multi-device error check" command but does not read any
+    responses.
+
+    Note: Before using this, most users should make sure the MotoronSerial
+    object is configured to use the compact protocol: construct the object
+    without specifying a device number, or set device_number to None.
+    """
     if self.serial_options & (1 << SERIAL_OPTION_14BIT_DEVICE_NUMBER):
       if device_count < 0 or device_count > 0x3FFF:
         raise RuntimeError('Invalid device count.')
@@ -1776,21 +1793,21 @@ class MotoronSerial(MotoronBase):
     self._MotoronBase__send_command(cmd)
     self.port.flush()
 
-  # Sends a "Multi-device error check" command and reads the responses.
-  #
-  # Returns the number of devices that indicated they have no errors.
-  # If the return value is equal to device_count, then that indicates a
-  # successful check and no errors.
-  # If the return value is less than device count, you can add the return
-  # value to the starting_device_number to get the device number of the
-  # first device where the check failed.  This device either did not
-  # respond or it responded with an indication that it has an error, or it
-  # responded with an invalid byte.
-  #
-  # Note: Before using this, most users should make sure the MotoronSerial
-  # object is configured to use the compact protocol: construct the object
-  # without specifying a device number, or set device_number to None.
   def multi_device_error_check(self, starting_device_number, device_count):
+    """
+    Sends a "Multi-device error check" command and reads the responses.
+
+    Returns the number of devices that indicated they have no errors.
+    If the return value is less than device count, you can add the return
+    value to the starting_device_number to get the device number of the
+    first device where the check failed.  This device either did not
+    respond or it responded with an indication that it has an error, or an
+    unexpected byte was received for some reason.
+
+    Note: Before using this, most users should make sure the MotoronSerial
+    object is configured to use the compact protocol: construct the object
+    without specifying a device number, or set device_number to None.
+    """
     self.multi_device_error_check_start(starting_device_number, device_count)
     responses = self.port.read(device_count)
     for i in range(len(responses)):
@@ -1799,7 +1816,14 @@ class MotoronSerial(MotoronBase):
 
   def multi_device_write(self, starting_device_number, device_count,
     command_byte, data):
-    # TODO: documentation
+    """
+    Sends a "Multi-device write" command.
+
+    Note: Before using this, most users should make sure the MotoronSerial
+    object is configured to use the compact protocol: construct the object
+    without specifying a device number, or call setDeviceNumber with an
+    argument of 0xFFFF.
+    """
 
     if bool(self.serial_options & (1 << SERIAL_OPTION_14BIT_DEVICE_NUMBER)):
       if device_count < 0 or device_count > 0x3FFF:
