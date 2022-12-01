@@ -24,8 +24,8 @@ import motoron
 # Creates an object for each Motoron controller. Each address argument below
 # should be the 7-bit I2C address of the controller.
 #
-# You should use the set_i2c_addresses.py utility to assign a unique address to
-# each Motoron, and then modify the list below to match your setup.
+# You should use the i2c_set_addresses_example.py utility to assign a unique
+# address to each Motoron, and then modify the list below to match your setup.
 mc1 = motoron.MotoronI2C(address=17)
 mc2 = motoron.MotoronI2C(address=18)
 mc3 = motoron.MotoronI2C(address=19)

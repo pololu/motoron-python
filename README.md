@@ -50,8 +50,8 @@ Several example programs come with the library.  They are single-file
 Python programs that have names ending with `_example.py`.
 
 You can run an example program by typing the path to the example.  For example,
-if you are in the `motoron-rpi` directory, type `./simple_example.py` to run
-that example.
+if you are in the `motoron-rpi` directory, type `./i2c_simple_example.py`
+to run that example.
 
 ## Troubleshooting
 

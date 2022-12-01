@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # This example shows a simple way to control the Motoron Motor Controller.
-# It is like simple_example.py but it does not use the Motoron library.
+# It is like i2c_simple_example.py but it does not use the Motoron library.
 
 import math
 import time
