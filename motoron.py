@@ -52,7 +52,7 @@ class MotoronBase():
     ```
     """
     cmd = [CMD_GET_FIRMWARE_VERSION]
-    response = self.__send_command_and_read_response(cmd, 4)
+    response = self._send_command_and_read_response(cmd, 4)
     return {
       'product_id': int.from_bytes(response[0:2], byteorder='little', signed=False),
       'firmware_version': {'major': response[3], 'minor': response[2]}
@@ -106,7 +106,7 @@ class MotoronBase():
       options & 0x7F,
       ~options & 0x7F
     ]
-    self.__send_command_core(cmd, True)
+    self._send_command_core(cmd, True)
 
   def set_protocol_options_locally(self, options):
     """
@@ -190,7 +190,7 @@ class MotoronBase():
       offset & 0x7F,
       length & 0x7F,
     ]
-    return self.__send_command_and_read_response(cmd, length)
+    return self._send_command_and_read_response(cmd, length)
 
   def read_eeprom_device_number(self):
     """
@@ -223,7 +223,7 @@ class MotoronBase():
       cmd[2] ^ 0x7F,
       cmd[3] ^ 0x7F,
     ]
-    self.__send_command(cmd)
+    self._send_command(cmd)
     time.sleep(0.006)
 
   def write_eeprom16(self, offset, value):
@@ -343,7 +343,7 @@ class MotoronBase():
     """
     # Always send the reinitialize command with a CRC byte to make it more reliable.
     cmd = [CMD_REINITIALIZE]
-    self.__send_command_core(cmd, True)
+    self._send_command_core(cmd, True)
     self.protocol_options = MotoronBase.__DEFAULT_PROTOCOL_OPTIONS
 
   def reset(self, ignore_nack=True):
@@ -368,7 +368,7 @@ class MotoronBase():
     # Always send the reset command with a CRC byte to make it more reliable.
     cmd = [CMD_RESET]
     try:
-      self.__send_command_core(cmd, True)
+      self._send_command_core(cmd, True)
     except OSError as e:
       # Errno 5 (Input/output error) or 121 (Remote I/O error) indicates a
       # NACK of a data byte.  Ignore it if the ignore_nack argument is True.
@@ -395,7 +395,7 @@ class MotoronBase():
       offset & 0x7F,
       length & 0x7F,
     ]
-    return self.__send_command_and_read_response(cmd, length)
+    return self._send_command_and_read_response(cmd, length)
 
   def get_var_u8(self, motor, offset):
     """
@@ -969,7 +969,7 @@ class MotoronBase():
       value & 0x7F,
       (value >> 7) & 0x7F,
     ]
-    self.__send_command(cmd)
+    self._send_command(cmd)
 
   def set_command_timeout_milliseconds(self, ms):
     """
@@ -1265,7 +1265,7 @@ class MotoronBase():
     user's guide.
     """
     cmd = [CMD_COAST_NOW]
-    self.__send_command(cmd)
+    self._send_command(cmd)
 
   def clear_motor_fault(self, flags=0):
     """
@@ -1281,7 +1281,7 @@ class MotoronBase():
     \sa clear_motor_fault_unconditional(), get_motor_faulting_flag()
     """
     cmd = [ CMD_CLEAR_MOTOR_FAULT, (flags & 0x7F) ]
-    self.__send_command(cmd)
+    self._send_command(cmd)
 
   def clear_motor_fault_unconditional(self):
     """
@@ -1310,7 +1310,7 @@ class MotoronBase():
       flags & 0x7F,
       (flags >> 7) & 0x7F,
     ]
-    self.__send_command(cmd)
+    self._send_command(cmd)
 
   def clear_reset_flag(self):
     """
@@ -1350,7 +1350,7 @@ class MotoronBase():
       flags & 0x7F,
       (flags >> 7) & 0x7F,
     ]
-    self.__send_command(cmd)
+    self._send_command(cmd)
 
   def set_speed(self, motor, speed):
     """
@@ -1376,7 +1376,7 @@ class MotoronBase():
       speed & 0x7F,
       (speed >> 7) & 0x7F,
     ]
-    self.__send_command(cmd)
+    self._send_command(cmd)
 
   def set_speed_now(self, motor, speed):
     """
@@ -1394,7 +1394,7 @@ class MotoronBase():
       speed & 0x7F,
       (speed >> 7) & 0x7F,
     ]
-    self.__send_command(cmd)
+    self._send_command(cmd)
 
   def set_buffered_speed(self, motor, speed):
     """
@@ -1416,7 +1416,7 @@ class MotoronBase():
       speed & 0x7F,
       (speed >> 7) & 0x7F,
     ]
-    self.__send_command(cmd)
+    self._send_command(cmd)
 
   def set_all_speeds(self, *speeds):
     """
@@ -1452,7 +1452,7 @@ class MotoronBase():
         speed & 0x7F,
         (speed >> 7) & 0x7F,
       ]
-    self.__send_command(cmd)
+    self._send_command(cmd)
 
   def set_all_speeds_now(self, *speeds):
     """
@@ -1476,7 +1476,7 @@ class MotoronBase():
         speed & 0x7F,
         (speed >> 7) & 0x7F,
       ]
-    self.__send_command(cmd)
+    self._send_command(cmd)
 
   def set_all_buffered_speeds(self, *speeds):
     """
@@ -1502,7 +1502,7 @@ class MotoronBase():
         speed & 0x7F,
         (speed >> 7) & 0x7F,
       ]
-    self.__send_command(cmd)
+    self._send_command(cmd)
 
   def set_all_speeds_using_buffers(self):
     """
@@ -1515,7 +1515,7 @@ class MotoronBase():
       set_all_buffered_speeds()
     """
     cmd = [CMD_SET_ALL_SPEEDS_USING_BUFFERS]
-    self.__send_command(cmd)
+    self._send_command(cmd)
 
   def set_all_speeds_now_using_buffers(self):
     """
@@ -1529,7 +1529,7 @@ class MotoronBase():
       set_all_buffered_speeds()
     """
     cmd = [CMD_SET_ALL_SPEEDS_NOW_USING_BUFFERS]
-    self.__send_command(cmd)
+    self._send_command(cmd)
 
   def set_braking(self, motor, amount):
     """
@@ -1558,7 +1558,7 @@ class MotoronBase():
       amount & 0x7F,
       (amount >> 7) & 0x7F,
     ]
-    self.__send_command(cmd)
+    self._send_command(cmd)
 
   def set_braking_now(self, motor, amount):
     """
@@ -1586,7 +1586,7 @@ class MotoronBase():
       amount & 0x7F,
       (amount >> 7) & 0x7F,
     ]
-    self.__send_command(cmd)
+    self._send_command(cmd)
 
   def reset_command_timeout(self):
     """
@@ -1602,11 +1602,11 @@ class MotoronBase():
     \sa disable_command_timeout(), set_command_timeout_milliseconds()
     """
     cmd = [CMD_RESET_COMMAND_TIMEOUT]
-    self.__send_command(cmd)
+    self._send_command(cmd)
 
-  def __send_command(self, cmd):
+  def _send_command(self, cmd):
     send_crc = bool(self.protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS))
-    self.__send_command_core(cmd, send_crc)
+    self._send_command_core(cmd, send_crc)
 
 
 def calculate_current_limit(milliamps, type, reference_mv, offset):
@@ -1674,7 +1674,7 @@ class MotoronI2C(MotoronBase):
     ## The 7-bit I2C address used by this object. The default is 16.
     self.address = address
 
-  def _MotoronBase__send_command_core(self, cmd, send_crc):
+  def _send_command_core(self, cmd, send_crc):
     if send_crc:
       write = self._msg.write(self.address, cmd + [calculate_crc(cmd)])
     else:
@@ -1697,8 +1697,8 @@ class MotoronI2C(MotoronBase):
         raise RuntimeError('Incorrect CRC received.')
     return response
 
-  def _MotoronBase__send_command_and_read_response(self, cmd, response_length):
-    self.__send_command(cmd)
+  def _send_command_and_read_response(self, cmd, response_length):
+    self._send_command(cmd)
     return self.__read_response(response_length)
 
 class MotoronSerial(MotoronBase):
@@ -1790,7 +1790,7 @@ class MotoronSerial(MotoronBase):
         device_count,
       ]
 
-    self._MotoronBase__send_command(cmd)
+    self._send_command(cmd)
     self.port.flush()
 
   def multi_device_error_check(self, starting_device_number, device_count):
@@ -1854,9 +1854,9 @@ class MotoronSerial(MotoronBase):
     cmd += [bytes_per_device, command_byte & 0x7F]
     cmd += data
 
-    self._MotoronBase__send_command(cmd)
+    self._send_command(cmd)
 
-  def _MotoronBase__send_command_core(self, cmd, send_crc):
+  def _send_command_core(self, cmd, send_crc):
     if self.device_number != None:
       if self.serial_options & (1 << SERIAL_OPTION_14BIT_DEVICE_NUMBER):
         cmd = [
@@ -1905,6 +1905,6 @@ class MotoronSerial(MotoronBase):
 
     return response
 
-  def _MotoronBase__send_command_and_read_response(self, cmd, response_length):
-    self._MotoronBase__send_command(cmd)
+  def _send_command_and_read_response(self, cmd, response_length):
+    self._send_command(cmd)
     return self.__read_response(response_length)
