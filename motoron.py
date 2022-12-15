@@ -285,12 +285,13 @@ class MotoronBase():
     self.write_eeprom(SETTING_ALTERNATIVE_DEVICE_NUMBER, 0)
     self.write_eeprom(SETTING_ALTERNATIVE_DEVICE_NUMBER + 1, 0)
 
-  def write_eeprom_serial_options(self, options):
+  def write_eeprom_communication_options(self, options):
     """
     Writes to the serial options byte stored in EEPROM, changing it to
     the specified value.
 
-    The bits in this byte are defined by the MOTORON_SERIAL_OPTION_* macros.
+    The bits in this byte are defined by the
+    MOTORON_COMMUNICATION_OPTION_* constants.
 
     This function is only useful on Motorons with a serial interface,
     and only has an effect if JMP1 is shorted to GND.
@@ -299,7 +300,7 @@ class MotoronBase():
     EEPROM memory of the Motoron's microcontroller is only rated for
     100,000 erase/write cycles.**
     """
-    self.write_eeprom(SETTING_SERIAL_OPTIONS, options)
+    self.write_eeprom(SETTING_COMMUNICATION_OPTIONS, options)
 
   def write_eeprom_baud_rate(self, baud):
     """
@@ -1719,7 +1720,7 @@ class MotoronSerial(MotoronBase):
     ## The serial options used by this object.  This must match the serial
     ## options in the EEPROM of the Motoron you are communicating with.
     ## The default is 7-bit device numbers and 8-bit responses.
-    self.serial_options = 0
+    self.communication_options = 0
 
   def set_port(self, port):
     """
@@ -1740,27 +1741,27 @@ class MotoronSerial(MotoronBase):
     Configures this object to work with Motorons that are configured to send
     7-bit serial responses.
     """
-    self.serial_options |= (1 << SERIAL_OPTION_7BIT_RESPONSES)
+    self.communication_options |= (1 << COMMUNICATION_OPTION_7BIT_RESPONSES)
 
   def expect_8bit_responses(self):
     """
     Configures this object to work with Motorons that are configured to send
     responses in the normal 8-bit format.
     """
-    self.serial_options &= ~(1 << SERIAL_OPTION_7BIT_RESPONSES)
+    self.communication_options &= ~(1 << COMMUNICATION_OPTION_7BIT_RESPONSES)
 
   def use_14bit_device_number(self):
     """
     Configures this object to send 14-bit device numbers when using the
     Pololu protocol, instead of the default 7-bit.
     """
-    self.serial_options |= (1 << SERIAL_OPTION_14BIT_DEVICE_NUMBER)
+    self.communication_options |= (1 << COMMUNICATION_OPTION_14BIT_DEVICE_NUMBER)
 
   def use_7bit_device_number(self):
     """
     Configures this object to send 7-bit device numbers, which is the default.
     """
-    self.serial_options &= ~(1 << SERIAL_OPTION_14BIT_DEVICE_NUMBER)
+    self.communication_options &= ~(1 << COMMUNICATION_OPTION_14BIT_DEVICE_NUMBER)
 
   def multi_device_error_check_start(self, starting_device_number, device_count):
     """
@@ -1771,7 +1772,7 @@ class MotoronSerial(MotoronBase):
     object is configured to use the compact protocol: construct the object
     without specifying a device number, or set device_number to None.
     """
-    if self.serial_options & (1 << SERIAL_OPTION_14BIT_DEVICE_NUMBER):
+    if self.communication_options & (1 << COMMUNICATION_OPTION_14BIT_DEVICE_NUMBER):
       if device_count < 0 or device_count > 0x3FFF:
         raise RuntimeError('Invalid device count.')
       cmd = [
@@ -1825,7 +1826,7 @@ class MotoronSerial(MotoronBase):
     argument of 0xFFFF.
     """
 
-    if bool(self.serial_options & (1 << SERIAL_OPTION_14BIT_DEVICE_NUMBER)):
+    if bool(self.communication_options & (1 << COMMUNICATION_OPTION_14BIT_DEVICE_NUMBER)):
       if device_count < 0 or device_count > 0x3FFF:
         raise RuntimeError('Invalid device count.')
       cmd = [
@@ -1858,7 +1859,7 @@ class MotoronSerial(MotoronBase):
 
   def _send_command_core(self, cmd, send_crc):
     if self.device_number != None:
-      if self.serial_options & (1 << SERIAL_OPTION_14BIT_DEVICE_NUMBER):
+      if self.communication_options & (1 << COMMUNICATION_OPTION_14BIT_DEVICE_NUMBER):
         cmd = [
           0xAA,
           self.device_number & 0x7F,
@@ -1878,7 +1879,7 @@ class MotoronSerial(MotoronBase):
 
   def __read_response(self, length):
     crc_enabled = bool(self.protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
-    response_7bit = bool(self.serial_options & (1 << SERIAL_OPTION_7BIT_RESPONSES))
+    response_7bit = bool(self.communication_options & (1 << COMMUNICATION_OPTION_7BIT_RESPONSES))
 
     if response_7bit and length > 7:
       raise RuntimeError('The Motoron does not support response payloads ' \

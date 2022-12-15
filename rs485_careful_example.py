@@ -9,7 +9,8 @@
 # errors on multiple Motorons.
 #
 # You will need to change the following variables to match your configuration:
-# port, starting_device_number, device_count, motors_per_device, serial_options.
+# port, starting_device_number, device_count, motors_per_device,
+# communication_options.
 #
 # Note: If your Motorons have fewer than three motor channels, you should remove
 # the commands that operate on the motors your controller does not have.
@@ -26,17 +27,17 @@ starting_device_number = 17
 device_count = 3
 motors_per_device = 2
 
-serial_options = 1 << motoron.SERIAL_OPTION_7BIT_RESPONSES
-# serial_options |= 1 << motoron.SERIAL_OPTION_14BIT_DEVICE_NUMBER
+communication_options = 1 << motoron.COMMUNICATION_OPTION_7BIT_RESPONSES
+# communication_options |= 1 << motoron.COMMUNICATION_OPTION_14BIT_DEVICE_NUMBER
 
 mcs = []
-for device_number in range(starting_device_number, starting_device_number + device_count):
-  mc = motoron.MotoronSerial(port=port, device_number=device_number)
-  mc.serial_options = serial_options
+for i in range(device_count):
+  mc = motoron.MotoronSerial(port = port, device_number = starting_device_number + i)
+  mc.communication_options = communication_options
   mcs.append(mc)
 
 mc_broadcast = motoron.MotoronSerial(port=port)
-mc_broadcast.serial_options = serial_options
+mc_broadcast.communication_options = communication_options
 
 # Define which status flags the Motoron should treat as errors.
 error_mask = (
@@ -45,7 +46,7 @@ error_mask = (
   (1 << motoron.STATUS_FLAG_COMMAND_TIMEOUT_LATCHED) |
   (1 << motoron.STATUS_FLAG_MOTOR_FAULT_LATCHED) |
   (1 << motoron.STATUS_FLAG_NO_POWER_LATCHED) |
-  (1 << motoron.STATUS_FLAG_SERIAL_ERROR) |
+  (1 << motoron.STATUS_FLAG_UART_ERROR) |
   (1 << motoron.STATUS_FLAG_RESET) |
   (1 << motoron.STATUS_FLAG_COMMAND_TIMEOUT))
 

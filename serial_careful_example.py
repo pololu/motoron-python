@@ -36,7 +36,7 @@ error_mask = (
   (1 << motoron.STATUS_FLAG_COMMAND_TIMEOUT_LATCHED) |
   (1 << motoron.STATUS_FLAG_MOTOR_FAULT_LATCHED) |
   (1 << motoron.STATUS_FLAG_NO_POWER_LATCHED) |
-  (1 << motoron.STATUS_FLAG_SERIAL_ERROR) |
+  (1 << motoron.STATUS_FLAG_UART_ERROR) |
   (1 << motoron.STATUS_FLAG_RESET) |
   (1 << motoron.STATUS_FLAG_COMMAND_TIMEOUT))
 
