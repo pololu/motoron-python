@@ -20,7 +20,7 @@ import time
 import motoron
 
 mc = motoron.MotoronSerial()
-mc.set_port("/dev/ttyS0")
+mc.set_port("/dev/serial0")
 
 # ADC reference voltage
 reference_mv = 3300

@@ -18,10 +18,8 @@ import time
 import serial
 import motoron
 
-# port = serial.Serial("/dev/ttyS0", 115200, timeout=0.1, write_timeout=0.1)
-port = serial.Serial("COM6", 250000, timeout=0.1, write_timeout=0.1)
-
-mc = motoron.MotoronSerial(port=port)
+mc = motoron.MotoronSerial()
+mc.set_port("/dev/serial0")
 
 def motors_init():
   global last_time_motors_init

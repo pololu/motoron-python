@@ -18,7 +18,7 @@ import time
 import motoron
 import serial
 
-port = serial.Serial("/dev/ttyS0", 115200, timeout=0.1, write_timeout=0.1)
+port = serial.Serial("/dev/serial0", 115200, timeout=0.1, write_timeout=0.1)
 
 # Create an object for each Motoron controller. The device numbers below must
 # match the way you have configured your Motorons.

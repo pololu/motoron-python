@@ -21,7 +21,7 @@ import time
 import motoron
 
 mc = motoron.MotoronSerial()
-mc.set_port("/dev/ttyS0")
+mc.set_port("/dev/serial0")
 
 # Reset the controller to its default settings, then disable CRC.  The bytes for
 # each of these commands are shown here in case you want to implement them on

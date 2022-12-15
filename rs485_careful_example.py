@@ -20,7 +20,7 @@ import time
 import motoron
 import serial
 
-port = serial.Serial("/dev/ttyS0", 115200, timeout=0.1, write_timeout=0.1)
+port = serial.Serial("/dev/serial0", 115200, timeout=0.1, write_timeout=0.1)
 
 starting_device_number = 17
 device_count = 3

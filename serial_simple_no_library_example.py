@@ -7,7 +7,7 @@ import math
 import time
 import serial
 
-port = serial.Serial("/dev/ttyS0", 115200, timeout=0.1, write_timeout=0.1)
+port = serial.Serial("/dev/serial0", 115200, timeout=0.1, write_timeout=0.1)
 
 def set_max_acceleration(motor, accel):
   port.write([
