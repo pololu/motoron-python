@@ -63,7 +63,7 @@ def allow_address_communication(address):
   if address >= 128: return False
 
   # If you have devices on your bus and you want to prevent this
-  # sketch from talking to them, potentially causing unwanted
+  # code from talking to them, potentially causing unwanted
   # operations, add their 7-bit addresses here with a line like this:
   # if address == 0x6B: return False
 
