@@ -1798,6 +1798,9 @@ class MotoronSerial(MotoronBase):
     """
     Sends a "Multi-device error check" command and reads the responses.
 
+    This function assumes that each addressed Motoron can see the repsonses
+    sent by the other Motorons (e.g. they are in a half-duplex RS-485 network).
+
     Returns the number of devices that indicated they have no errors.
     If the return value is less than device count, you can add the return
     value to the starting_device_number to get the device number of the
