@@ -23,8 +23,10 @@ o [OPTS]         | Use different communication options.
 n                | Use 115200 baud, 8-bit responses, 7-bit device number.
 j                | Use 9600 baud, 8-bit responses, 7-bit device number.
 k                | Use the options & baud rate we're assigning to devices.
+
+For more information about each command, see the comments in the
+source code.
 """
-# For more information about each command, see the comments below.
 
 start_message = """
 Motoron Serial Setup Utility
@@ -57,6 +59,102 @@ assign_communication_options = \
 port = serial.Serial("/dev/serial0", 115200, timeout=0.01, write_timeout=0.1)
 
 mc = motoron.MotoronSerial(port=port)
+
+last_device_number = 16
+
+# Command syntax: a [NUM] [ALTNUM]
+#
+# This command sends a series of "Write EEPROM" commands using the
+# compact protocol to set all the settings in Motoron's EEPROM.
+# For this command to work, the Motoron must be using the same baud rate as
+# the Arduino and the Motoron's JMP1 line must be low.
+#
+# NUM should be the desired device number for the Motoron.
+# If NUM is omitted or equal to "-1", the program will automatically pick a
+# device number.
+#
+# ALTNUM should be the desired *alternative* device number for the Motoron.
+# If ALTNUM is omitted or equal to "-1", the feature is disabled.
+#
+# The other settings are set according to the constants above
+# (e.g. assignBaudRate).
+#
+# Settings written to the Motoron's EEPROM do not have an immediate affect,
+# but you can use the "r" command to reset the Motoron and make the new
+# settings take effect.
+#
+# Examples:
+#   a
+#   a 17
+#   a -1 0
+#   a 0x123 0x456
+def assign_all_settings(line):
+  global last_device_number
+  max_device_number = 0x3FFF if assign_14bit_device_number else 0x7F
+
+  device_number = -1
+  alt_device_number = -1
+
+  parts = line[1:].split()
+  if len(parts) >= 1:
+    try:
+      device_number = int(parts[0])
+    except ValueError:
+      print("Invalid device number argument.")
+      return
+  if len(parts) >= 2:
+    try:
+      alt_device_number = int(parts[1])
+    except ValueError:
+      print("Invalid alternative device number argument.")
+      return
+
+  if device_number == -1:
+    # The user did not specify a device number, so pick one.
+    device_number = (last_device_number + 1) & max_device_number
+
+  if not device_number in range(0, max_device_number + 1):
+    print("Invalid device number.")
+    return
+
+  if not alt_device_number in range(-1, max_device_number + 1):
+    print("Invalid alternative device number.")
+    return
+
+  mc.enable_crc()
+  mc.write_eeprom_device_number(device_number)
+  if alt_device_number == -1:
+    mc.write_eeprom_disable_alternative_device_number()
+  else:
+    mc.write_eeprom_alternative_device_number(alt_device_number)
+  mc.write_eeprom_baud_rate(assign_baud_rate)
+  mc.write_eeprom_communication_options(assign_communication_options)
+  mc.write_eeprom_response_delay(assign_response_delay)
+
+  print("Assigned device number", device_number, end='')
+
+  if alt_device_number != -1:
+    print(" and", alt_device_number, end='')
+  print(",", assign_baud_rate, "baud", end='')
+
+  if assign_14bit_device_number:
+    print(", 14-bit device number", end='')
+  else:
+    print(", 7-bit device number", end='')
+
+  if assign_7bit_responses:
+    print(", 7-bit responses", end='')
+  else:
+    print(", 8-bit responses", end='')
+
+  if assign_err_is_de:
+    print(", ERR is DE", end='')
+  else:
+    print(", ERR is normal", end='')
+
+  print(".")
+
+  last_device_number = device_number
 
 def print_communication_settings():
   print(port.baudrate, 'baud', end='')
@@ -120,16 +218,67 @@ def identify_devices():
   print("Done.")
   mc.device_number = None
 
+# Command syntax: b BAUD
+#
+# This command configures the Arduino to use a different baud rate when
+# communicating with the Motoron.
+#
+# Example: b 38600
+def command_set_baud_rate(line):
+  try:
+    baud_rate = int(line[1:])
+  except ValueError:
+    print("Invalid baud rate.")
+    return
+  if baud_rate < motoron.MIN_BAUD_RATE or baud_rate > motoron.MAX_BAUD_RATE:
+    print("Invalid baud rate.")
+    return
+  print(baud_rate)
+  port.baudrate = baud_rate
+  print_communication_settings_line()
+
+# Command syntax: o [OPTS]
+#
+# This command configures the Arduino to use different serial options when
+# communicating with the Motoron.
+#
+# If OPTS is omitted, this command cycles through the four different possible
+# sets of serial options.
+#
+# Otherwise, OPTS should be a number between 0 and 3:
+#   0 = 8-bit responses, 7-bit device numbers
+#   1 = 7-bit responses, 7-bit device numbers
+#   2 = 8-bit responses, 14-bit device numbers
+#   3 = 7-bit responses, 14-bit device numbers
+def command_set_communication_options(line):
+  try:
+    mc.communication_options = int(line[1:])
+  except ValueError:
+    mc.communication_options = (mc.communication_options + 1) & 3
+    pass
+  print_communication_settings_line()
+
 def process_command(line):
   if not line: return
-  elif line[0] == 'a': pass # TODO
-  elif line[0] == 'r': pass # TODO
+  elif line[0] == 'a': assign_all_settings(line)
+  elif line[0] == 'r':
+    print("Reset")
+    mc.reset()
   elif line[0] == 'i': identify_devices()
-  elif line[0] == 'b': pass # TODO
-  elif line[0] == 'o': pass # TODO
-  elif line[0] == 'n': pass # TODO
-  elif line[0] == 'j': pass # TODO
-  elif line[0] == 'k': pass # TODO
+  elif line[0] == 'b': command_set_baud_rate(line)
+  elif line[0] == 'o': command_set_communication_options(line)
+  elif line[0] == 'n':
+    port.baudrate = 115200
+    mc.communication_options = 0
+    print_communication_settings_line()
+  elif line[0] == 'j':
+    port.baudrate = 9600
+    mc.communication_options = 0
+    print_communication_settings_line()
+  elif line[0] == 'k':
+    port.baudrate = assign_baud_rate
+    mc.communication_options = assign_communication_options
+    print_communication_settings_line()
   elif line[0] == 'h' or line[0] == 'H' or line[0] == '?': print(help_message)
   elif line == 'q' or line == 'quit': sys.exit(0)
   else: print("Error: Unreocgnized command.  Type h for help.")
