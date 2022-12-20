@@ -34,6 +34,7 @@ Motoron Serial Setup Utility
 Type "h" for help.
 """
 
+import readline
 import sys
 import time
 import serial

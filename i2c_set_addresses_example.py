@@ -44,6 +44,7 @@ Warning: If you have devices that are not Motorons, these commands could cause
 undesired behavior.  Type "h" for more info.
 """
 
+import readline
 import sys
 import time
 import motoron
