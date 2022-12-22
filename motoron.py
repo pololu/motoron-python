@@ -1866,8 +1866,8 @@ class MotoronSerial(MotoronBase):
 
     if data == None: data = []
     if len(data) % device_count:
-      raise RuntimeError('Expected data length to be a multiple of {}, got {}.'
-        .format(device_count, len(data)))
+      raise RuntimeError("Expected data length to be a multiple of " \
+        f"{device_count}, got {len(data)}.")
     bytes_per_device = len(data) // device_count
     if bytes_per_device > 15: raise RuntimeError('Data too long.')
 
@@ -1908,8 +1908,7 @@ class MotoronSerial(MotoronBase):
     read_length = length + response_7bit + crc_enabled
     response = self.port.read(read_length)
     if len(response) != read_length:
-      raise RuntimeError('Expected to read {} bytes, got {}.'
-        .format(read_length, len(response)))
+      raise RuntimeError(f"Expected to read {read_length} bytes, got {len(response)}.")
     response = bytearray(response)
 
     if crc_enabled:
