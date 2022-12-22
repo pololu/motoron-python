@@ -36,6 +36,8 @@ class MotoronBase():
     (1 << STATUS_FLAG_RESET))
 
   def __init__(self):
+    ## The bits in this variable are defined by the
+    ## motoron.PROTOCOL_OPTION_* constants.  See set_protocol_options().
     self.protocol_options = MotoronBase.__DEFAULT_PROTOCOL_OPTIONS
 
   def get_firmware_version(self):
@@ -1609,6 +1611,9 @@ class MotoronBase():
     send_crc = bool(self.protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS))
     self._send_command_core(cmd, send_crc)
 
+  def _send_command_and_read_response(self, cmd, response_length):
+    self._send_command(cmd)
+    return self._read_response(response_length)
 
 def calculate_current_limit(milliamps, type, reference_mv, offset):
   """
@@ -1682,7 +1687,7 @@ class MotoronI2C(MotoronBase):
       write = self._msg.write(self.address, cmd)
     self.bus.i2c_rdwr(write)
 
-  def __read_response(self, length):
+  def _read_response(self, length):
     # On some Raspberry Pis with buggy implementations of I2C clock stretching,
     # sleeping for 0.5 ms might be necessary in order to give the Motoron time to
     # prepare its response, so it does not need to stretch the clock.
@@ -1698,16 +1703,21 @@ class MotoronI2C(MotoronBase):
         raise RuntimeError('Incorrect CRC received.')
     return response
 
-  def _send_command_and_read_response(self, cmd, response_length):
-    self._send_command(cmd)
-    return self.__read_response(response_length)
-
 class MotoronSerial(MotoronBase):
   """
   Represents a serial connection to a Pololu Motoron Motor Controller.
   """
 
   def __init__(self, *, port=None, device_number=None):
+    """
+    Creates a new MotoronSerial object.
+
+    The `deviceNumber` argument is optional.  If it is omitted or None,
+    the object will use the compact protocol.
+
+    The `port` argument specifies the serial port to use and is passed
+    directly to set_port().
+    """
     super().__init__()
 
     self.set_port(port)
@@ -1720,6 +1730,12 @@ class MotoronSerial(MotoronBase):
     ## The serial options used by this object.  This must match the serial
     ## options in the EEPROM of the Motoron you are communicating with.
     ## The default is 7-bit device numbers and 8-bit responses.
+    ##
+    ## The bits in this variable are defined by the
+    ## motoron.COMMUNICATION_OPTION_* constants.  The bits that affect the
+    ## behavior of this library are:
+    ## - motoron.COMMUNICATION_OPTION_7BIT_RESPONSES
+    ## - motoron.COMMUNICATION_OPTION_14BIT_DEVICE_NUMBER
     self.communication_options = 0
 
   def set_port(self, port):
@@ -1880,7 +1896,7 @@ class MotoronSerial(MotoronBase):
 
     self.port.write(cmd)
 
-  def __read_response(self, length):
+  def _read_response(self, length):
     crc_enabled = bool(self.protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
     response_7bit = bool(self.communication_options & (1 << COMMUNICATION_OPTION_7BIT_RESPONSES))
 
@@ -1909,6 +1925,3 @@ class MotoronSerial(MotoronBase):
 
     return response
 
-  def _send_command_and_read_response(self, cmd, response_length):
-    self._send_command(cmd)
-    return self.__read_response(response_length)
