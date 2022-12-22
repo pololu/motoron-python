@@ -1830,8 +1830,8 @@ class MotoronSerial(MotoronBase):
     """
     self.multi_device_error_check_start(starting_device_number, device_count)
     responses = self.port.read(device_count)
-    for i in range(len(responses)):
-      if responses[i] != ERROR_CHECK_CONTINUE: return i
+    for i, v in enumerate(responses):
+      if v != ERROR_CHECK_CONTINUE: return i
     return len(responses)
 
   def multi_device_write(self, starting_device_number, device_count,
