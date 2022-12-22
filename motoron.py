@@ -72,7 +72,7 @@ class MotoronBase():
     checks it to help ensure the command was received correctly.
 
     When CRC for responses is enabled, this library reads the CRC byte sent
-    by the Motoron in its repsonses and makes sure it is correct.  If the
+    by the Motoron in its responses and makes sure it is correct.  If the
     response CRC byte is incorrect, get_last_error() will return a non-zero
     error code after the command has been run.
 
@@ -1814,7 +1814,7 @@ class MotoronSerial(MotoronBase):
     """
     Sends a "Multi-device error check" command and reads the responses.
 
-    This function assumes that each addressed Motoron can see the repsonses
+    This function assumes that each addressed Motoron can see the responses
     sent by the other Motorons (e.g. they are in a half-duplex RS-485 network).
 
     Returns the number of devices that indicated they have no errors.
