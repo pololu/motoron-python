@@ -22,7 +22,7 @@ This library is designed to run on a Raspberry Pi and also works on
 other systems as long as they have Python 3 and either the
 [smbus2] library (for I&sup2;C) or the [pySerial] library (for UART serial).
 The smbus2 library generally only works on single-board Linux machines with
-an I&sup;C bus.  The pySerial library works on a wide variety of platforms.
+an I&sup2;C bus.  The pySerial library works on a wide variety of platforms.
 
 This library does **not** support Python 2.
 
