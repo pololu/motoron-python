@@ -9,6 +9,8 @@ This is a Python 3 library that helps interface with
 
 It supports the following Motoron controllers:
 
+- [Motoron M1T256 Single I&sup2;C Motor Controller][M1T256]
+- [Motoron M1U256 Single Serial Motor Controller][M1U256]
 - [Motoron M2T256 Dual I&sup2;C Motor Controller][M2T256]
 - [Motoron M2U256 Dual Serial Motor Controller][M2U256]
 - [Motoron M3S256 Triple Motor Controller Shield for Arduino][M3S256]
@@ -142,16 +144,19 @@ feature using motoron.MotoronBase.disable_command_timeout.
 ## Version history
 
 * 1.2.0 (2022-12-23): Added support for the [M2T256] and [M2U256] motorons.
+  This version also supports the later-released [M1T256] and [M1U256].
 * 1.1.0 (2022-08-05): Added support for the [M2S] and [M2H] Motorons.
 * 1.0.0 (2022-05-13): Original release.
 
 [motoron]: https://pololu.com/motoron
+[M1T256]: https://www.pololu.com/product/5061
+[M1U256]: https://www.pololu.com/product/5063
+[M2T256]: https://www.pololu.com/product/5065
+[M2U256]: https://www.pololu.com/product/5067
 [M3S256]: https://www.pololu.com/category/290
 [M3H256]: https://www.pololu.com/category/292
 [M2S]: https://www.pololu.com/category/291
 [M2H]: https://www.pololu.com/category/293
-[M2T256]: https://www.pololu.com/product/5065
-[M2U256]: https://www.pololu.com/product/5067
 [doc]: https://pololu.github.io/motoron-rpi/
 [guide]: https://www.pololu.com/docs/0J84
 [smbus2]: https://github.com/kplindegaard/smbus2
