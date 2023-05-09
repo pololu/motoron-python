@@ -18,8 +18,8 @@ reference_mv = 3300
 # current sense readings to milliamps.
 type = motoron.CurrentSenseType.MOTORON_18V18
 
-# Minimum allowed VIN voltage.  You can raise this to be closer
-# to your power supply's expected voltage.
+# Minimum allowed VIN voltage.  This example does not take current calibration
+# readings while VIN is below this configurable level.
 min_vin_voltage_mv = 6500
 
 units = motoron.current_sense_units_milliamps(type, reference_mv)

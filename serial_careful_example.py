@@ -25,7 +25,7 @@ mc.set_port("/dev/serial0")
 # ADC reference voltage
 reference_mv = 3300
 
-# Minimum allowed VIN voltage.  You can raise this to be closer to your power
+# Minimum allowed VIN voltage.  You can change this to be closer to your power
 # supply's expected voltage.
 min_vin_voltage_mv = 4500
 

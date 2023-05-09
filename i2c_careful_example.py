@@ -24,8 +24,8 @@ mc = motoron.MotoronI2C()
 # ADC reference voltage
 reference_mv = 3300
 
-# Minimum allowed VIN voltage.  You can raise this to be closer to your power
-# supply's expected voltage.
+# Minimum allowed VIN voltage.  This example is aborts if the voltage drops
+# below this configurable level.
 min_vin_voltage_mv = 4500
 
 # Define which status flags the Motoron should treat as errors.
