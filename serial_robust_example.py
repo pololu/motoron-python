@@ -10,7 +10,7 @@
 # - The Motoron experiences a reset
 # - A command timeout occurs
 #
-# Errors reported by the underlying Python I2C library are caught so they
+# Errors reported by the underlying Python serial library are caught so they
 # do not cause the program to terminate.
 
 import sys

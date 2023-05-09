@@ -7,7 +7,7 @@
 # - Motor power (VIN) is interrupted
 # - A motor fault occurs
 # - A protocol error or CRC error occurs
-# - The underlying Python I2C library reports an error
+# - The underlying Python serial library reports an error
 # - A command timeout occurs
 # - The Motoron experiences a reset
 #
