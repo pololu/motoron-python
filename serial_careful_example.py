@@ -41,7 +41,6 @@ error_mask = (
   (1 << motoron.STATUS_FLAG_COMMAND_TIMEOUT))
 
 mc.reinitialize()
-
 mc.clear_reset_flag()
 
 # Configure the Motoron to coast the motors while obeying deceleration limits if

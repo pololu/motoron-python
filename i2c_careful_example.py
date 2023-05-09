@@ -44,7 +44,6 @@ mc.clear_reset_flag()
 # Configure the Motoron to coast the motors while obeying deceleration limits if
 # there is an error.
 mc.set_error_response(motoron.ERROR_RESPONSE_COAST)
-
 mc.set_error_mask(error_mask)
 
 # Use a short command timeout of 100 ms: the Motoron will stop the motors if it
@@ -101,4 +100,8 @@ try:
     time.sleep(0.005)
 
 except KeyboardInterrupt:
+  mc.reset()
   pass
+except Exception:
+  mc.reset()
+  raise
