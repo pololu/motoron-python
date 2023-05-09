@@ -20,11 +20,18 @@ It supports the following Motoron controllers:
 
 ## Supported platforms
 
-This library is designed to run on a Raspberry Pi and also works on
-other systems as long as they have Python 3 and either the
+This library is designed to run on Linux on a Raspberry Pi
+or on MicroPython on an RP2040 microcontroller.
+
+It also works on other PC systems as long as they have Python 3 and either the
 [smbus2] library (for I&sup2;C) or the [pySerial] library (for UART serial).
 The smbus2 library generally only works on single-board Linux machines with
-an I&sup2;C bus.  The pySerial library works on a wide variety of platforms.
+an I&sup2;C bus.  The pySerial library works on a wide variety of PCs.
+
+It also works on other MicroPython systems as long as they have
+machine.I2C, machine.SoftI2C, or machine.UART.
+If you are not using an RP2040, you will probably have to modify the provided
+examples to properly initialize an I2C or UART object for your hardware.
 
 This library does **not** support Python 2.
 
@@ -143,6 +150,10 @@ feature using motoron.MotoronBase.disable_command_timeout.
 
 ## Version history
 
+* 2.0.0 (2023-05-09): Added MicroPython support and examples for the RP2040.
+  The `read_eeprom` and `get_variables` methods now return `bytes` or `bytearray`
+  objects instead of a list of integers.  Use `list()` on the return value
+  if you want a list.
 * 1.2.0 (2022-12-23): Added support for the [M2T256] and [M2U256] motorons.
   This version also supports the later-released [M1T256] and [M1U256].
 * 1.1.0 (2022-08-05): Added support for the [M2S] and [M2H] Motorons.

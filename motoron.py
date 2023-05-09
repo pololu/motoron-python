@@ -2,8 +2,16 @@
 
 import math
 import os
+import struct
 import time
-from enum import Enum
+
+try:
+  from enum import Enum
+  def enum_value(x): return x.value
+except ImportError:
+  Enum = object
+  def enum_value(x): return x
+
 from motoron_protocol import *
 
 ## \file motoron.py
@@ -55,9 +63,10 @@ class MotoronBase():
     """
     cmd = [CMD_GET_FIRMWARE_VERSION]
     response = self._send_command_and_read_response(cmd, 4)
+    product_id, minor, major = struct.unpack('<HBB', response)
     return {
-      'product_id': int.from_bytes(response[0:2], byteorder='little', signed=False),
-      'firmware_version': {'major': response[3], 'minor': response[2]}
+      'product_id': product_id,
+      'firmware_version': {'major': major, 'minor': minor}
     }
 
   def set_protocol_options(self, options):
@@ -421,7 +430,7 @@ class MotoronBase():
     \param offset The location of the first byte to read.
     """
     buffer = self.get_variables(motor, offset, 2)
-    return int.from_bytes(buffer, byteorder='little', signed=False) # equivalent to `struct.unpack('<H', ...)`
+    return struct.unpack('<H', buffer)[0]
 
   def get_var_s16(self, motor, offset):
     """
@@ -433,7 +442,7 @@ class MotoronBase():
     \param offset The location of the first byte to read.
     """
     buffer = self.get_variables(motor, offset, 2)
-    return int.from_bytes(buffer, byteorder='little', signed=True) # equivalent to `struct.unpack('<h', ...)`
+    return struct.unpack('<h', buffer)[0]
 
   def get_status_flags(self):
     """
@@ -853,11 +862,8 @@ class MotoronBase():
     \sa get_current_sense_raw_and_speed(), get_current_sense_processed_and_speed()
     """
     buffer = self.get_variables(motor, MVAR_CURRENT_SENSE_RAW, 6)
-    return {
-      'raw': int.from_bytes(buffer[0:2], byteorder='little', signed=False),
-      'speed': int.from_bytes(buffer[2:4], byteorder='little', signed=True),
-      'processed': int.from_bytes(buffer[4:6], byteorder='little', signed=False)
-    }
+    raw, speed, processed = struct.unpack('<HhH', buffer)
+    return { 'raw': raw, 'speed': speed, 'processed': processed }
 
   def get_current_sense_raw_and_speed(self, motor):
     """
@@ -867,10 +873,8 @@ class MotoronBase():
     This only works for the high-power Motorons.
     """
     buffer = self.get_variables(motor, MVAR_CURRENT_SENSE_RAW, 4)
-    return {
-      'raw': int.from_bytes(buffer[0:2], byteorder='little', signed=False),
-      'speed': int.from_bytes(buffer[2:4], byteorder='little', signed=True)
-    }
+    raw, speed = struct.unpack('<Hh', buffer)
+    return { 'raw': raw, 'speed': speed }
 
   def get_current_sense_processed_and_speed(self, motor):
     """
@@ -880,10 +884,8 @@ class MotoronBase():
     This only works for the high-power Motorons.
     """
     buffer = self.get_variables(motor, MVAR_CURRENT_SENSE_SPEED, 4)
-    return {
-      'speed': int.from_bytes(buffer[0:2], byteorder='little', signed=True),
-      'processed': int.from_bytes(buffer[2:4], byteorder='little', signed=False)
-    }
+    speed, processed = struct.unpack('<hH', buffer)
+    return { 'speed': speed, 'processed': processed }
 
   def get_current_sense_raw(self, motor):
     """
@@ -1633,7 +1635,7 @@ def calculate_current_limit(milliamps, type, reference_mv, offset):
     (50*1024/reference_mv) but it can vary widely.
   """
   if milliamps > 1000000: milliamps = 1000000
-  limit = offset * 125 / 128 + milliamps * 20 / (reference_mv * (type.value & 3))
+  limit = offset * 125 / 128 + milliamps * 20 / (reference_mv * (enum_value(type) & 3))
   if limit > 1000: limit = 1000
   return math.floor(limit)
 
@@ -1650,7 +1652,7 @@ def current_sense_units_milliamps(type, reference_mv):
   \param reference_mv The reference voltage (IOREF), in millivolts.
     For example, use 3300 for a 3.3 V system or 5000 for a 5 V system.
   """
-  return reference_mv * (type.value & 3) * 25 / 512
+  return reference_mv * (enum_value(e) & 3) * 25 / 512
 
 class MotoronI2C(MotoronBase):
   """
@@ -1671,37 +1673,82 @@ class MotoronI2C(MotoronBase):
     """
     super().__init__()
 
-    import smbus2
-    self._msg = smbus2.i2c_msg
+    self.set_bus(bus)
 
-    ## The I2C bus used by this object. The default is `SMBus(1)`, which
-    ## corresponds to `/dev/i2c-1`.
-    self.bus = smbus2.SMBus(bus) if isinstance(bus, int) else bus
     ## The 7-bit I2C address used by this object. The default is 16.
     self.address = address
 
-  def _send_command_core(self, cmd, send_crc):
+    """
+    Configures this object to use the specified I2C bus object.
+
+    The bus argument should be one of the following:
+    - The number of an I2C bus to open with smbus2
+      (e.g. 2 for `/dev/i2c-2`)
+    - An SMBus object from smbus2.
+    - A machine.I2C object from MicroPython.
+    """
+  def set_bus(self, bus):
+    if isinstance(bus, int):
+      import smbus2
+      bus = smbus2.SMBus(bus)
+
+    try:
+      bus.i2c_rdwr
+      type_is_smbus = True
+    except AttributeError:
+      type_is_smbus = False
+
+    if type_is_smbus:
+      self._send_command_core = self._smbus_send_command_core
+      self._read_response = self._smbus_read_response
+      import smbus2
+      self._msg = smbus2.i2c_msg
+    else:
+      self._send_command_core = self._mpy_send_command_core
+      self._read_response = self._mpy_read_response
+
+    self.bus = bus
+
+  def _smbus_send_command_core(self, cmd, send_crc):
     if send_crc:
       write = self._msg.write(self.address, cmd + [calculate_crc(cmd)])
     else:
       write = self._msg.write(self.address, cmd)
     self.bus.i2c_rdwr(write)
 
-  def _read_response(self, length):
+  def _smbus_read_response(self, length):
     # On some Raspberry Pis with buggy implementations of I2C clock stretching,
-    # sleeping for 0.5 ms might be necessary in order to give the Motoron time to
-    # prepare its response, so it does not need to stretch the clock.
+    # sleeping for 0.5 ms might be necessary in order to give the Motoron time
+    # to prepare its response, so it does not need to stretch the clock.
     time.sleep(0.0005)
 
     crc_enabled = bool(self.protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
     read = self._msg.read(self.address, length + crc_enabled)
     self.bus.i2c_rdwr(read)
-    response = list(read)
+    response = bytearray(read)
     if crc_enabled:
       crc = response.pop()
       if crc != calculate_crc(response):
         raise RuntimeError('Incorrect CRC received.')
     return response
+
+  def _mpy_send_command_core(self, cmd, send_crc):
+    if send_crc:
+      self.bus.writeto(self.address, bytes(cmd + [calculate_crc(cmd)]))
+    else:
+      self.bus.writeto(self.address, bytes(cmd))
+
+  def _mpy_read_response(self, length):
+    crc_enabled = bool(self.protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
+    response = self.bus.readfrom(self.address, length + crc_enabled)
+    if crc_enabled:
+      # MicroPython does not support bytearray.pop()
+      crc = response[-1]
+      response = response[:-1]
+      if crc != calculate_crc(response):
+        raise RuntimeError('Incorrect CRC received.')
+    return response
+
 
 class MotoronSerial(MotoronBase):
   """
@@ -1742,8 +1789,11 @@ class MotoronSerial(MotoronBase):
     """
     Configures this object to use the specified serial port object.
 
-    The port argument can either be the name of a serial port to open
-    (e.g. "COM6" or "/dev/ttyS0") or it can be a Serial object from pyserial.
+    The port argument should be one of the following:
+    - The name of a serial port to open with pyserial
+      (e.g. "COM6" or "/dev/ttyS0")
+    - A Serial object from pyserial.
+    - A machine.UART object from MicroPython.
     """
     if isinstance(port, str):
       import serial
@@ -1894,7 +1944,7 @@ class MotoronSerial(MotoronBase):
 
     if send_crc: cmd += [calculate_crc(cmd)]
 
-    self.port.write(cmd)
+    self.port.write(bytes(cmd))
 
   def _read_response(self, length):
     crc_enabled = bool(self.protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
@@ -1907,20 +1957,23 @@ class MotoronSerial(MotoronBase):
     self.port.flush()
     read_length = length + response_7bit + crc_enabled
     response = self.port.read(read_length)
+    if response is None: response = b''
     if len(response) != read_length:
       raise RuntimeError(f"Expected to read {read_length} bytes, got {len(response)}.")
-    response = bytearray(response)
 
     if crc_enabled:
-      crc = response.pop()
+      # MicroPython does not support: crc = response.pop()
+      crc = response[-1]
+      response = response[:-1]
       if crc != calculate_crc(response):
         raise RuntimeError('Incorrect CRC received.')
 
     if response_7bit:
-      msbs = response.pop()
+      # MicroPython does not support: msbs = response.pop()
+      msbs = response[-1]
+      response = bytearray(response[:-1])
       for i in range(length):
         if msbs & 1: response[i] |= 0x80
         msbs >>= 1
 
     return response
-
