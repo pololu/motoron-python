@@ -21,8 +21,7 @@ import motoron
 from machine import I2C, Pin
 
 bus = I2C(0, scl=Pin(5), sda=Pin(4))
-mc = motoron.MotoronI2C()
-mc.set_bus(bus)
+mc = motoron.MotoronI2C(bus=bus)
 
 # Reset the controller to its default settings, then disable CRC.  The bytes for
 # each of these commands are shown here in case you want to implement them on

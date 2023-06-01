@@ -21,7 +21,6 @@ from machine import I2C, Pin
 
 bus = I2C(0, scl=Pin(5), sda=Pin(4))
 mc = motoron.MotoronI2C(bus=bus)
-mc.set_bus(bus)
 
 # ADC reference voltage
 reference_mv = 3300
