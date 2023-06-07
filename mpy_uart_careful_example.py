@@ -22,8 +22,7 @@ import motoron
 from machine import UART, Pin
 
 port = UART(1, 115200, tx=Pin(4), rx=Pin(5), timeout=100)
-mc = motoron.MotoronSerial()
-mc.set_port(port)
+mc = motoron.MotoronSerial(port=port)
 
 # ADC reference voltage
 reference_mv = 3300
