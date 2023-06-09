@@ -1,5 +1,5 @@
 from distutils.core import setup
-setup(name='motoron_python',
+setup(name='motoron',
   version='2.0.0',
   description=(
     'Motoron Motor Controller Python library for Raspberry Pi'
