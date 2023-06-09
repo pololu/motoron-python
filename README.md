@@ -30,7 +30,7 @@ This library is designed to run on any Python 3 or MicroPython interpeter
 that has a working (including access to compatible hardware)
 version of one of the following Python libraries:
 
-- [smbus2] (for I&sup2;C)
+- [smbus2]
 - [pySerial]
 - [machine.I2C]
 - [machine.UART]
