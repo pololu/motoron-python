@@ -35,10 +35,9 @@ version of one of the following Python libraries:
 - [machine.I2C]
 - [machine.UART]
 
-The library was mainly developed on Raspberry Pi machines running
-Linux and on RP2040 microcontrollers running MicroPython.
-The library comes with examples that will work on those platforms with
-minimal modification.
+We have mainly tested this library on Raspberry Pi single-board Linux computers
+and MicroPython-compatible RP2040 development boards such as the
+Raspberry Pi Pico.
 
 This library does **not** support Python 2.
 
