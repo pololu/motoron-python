@@ -1,6 +1,5 @@
-#!/usr/bin/env python3
-
-# This example shows how to control the Motoron Motor Controller if you want to
+# This example shows how to control the Motoron Motor Controller
+# I2C interface using the machine.I2C class in MicroPython if you want to
 # shut down the motors whenever any problems are detected.
 #
 # The motors will stop and this program will terminate if:
@@ -14,8 +13,10 @@
 import sys
 import time
 import motoron
+from machine import I2C, Pin
 
-mc = motoron.MotoronI2C()
+bus = I2C(0, scl=Pin(5), sda=Pin(4))
+mc = motoron.MotoronI2C(bus=bus)
 
 # Parameters for the VIN voltage measurement.
 reference_mv = 3300
@@ -78,16 +79,11 @@ try:
   while True:
     check_for_problems()
 
-    if int(time.monotonic() * 1000) & 2048:
+    if time.ticks_ms() & 2048:
       mc.set_speed(1, 800)
     else:
       mc.set_speed(1, -800)
 
-    time.sleep(0.005)
-
-except KeyboardInterrupt:
-  mc.reset()
-  pass
-except Exception:
+except:
   mc.reset()
   raise

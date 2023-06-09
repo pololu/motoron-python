@@ -1,4 +1,4 @@
-# Motoron Motor Controller Python library for Raspberry Pi
+# Motoron Motor Controller library for Python/MicroPython
 
 [www.pololu.com](https://www.pololu.com/)
 
@@ -9,6 +9,12 @@ This is a Python 3 library that helps interface with
 
 It supports the following Motoron controllers:
 
+- [Motoron M1T550 Single I&sup2;C Motor Controller][M1T550]
+- [Motoron M1U550 Single Serial Motor Controller][M1U550]
+- [Motoron M2T550 Dual I&sup2;C Motor Controller][M2T550]
+- [Motoron M2U550 Dual Serial Motor Controller][M2U550]
+- [Motoron M3S550 Triple Motor Controller Shield for Arduino][M3S550]
+- [Motoron M3H550 Triple Motor Controller for Raspberry Pi][M3H550]
 - [Motoron M1T256 Single I&sup2;C Motor Controller][M1T256]
 - [Motoron M1U256 Single Serial Motor Controller][M1U256]
 - [Motoron M2T256 Dual I&sup2;C Motor Controller][M2T256]
@@ -20,40 +26,31 @@ It supports the following Motoron controllers:
 
 ## Supported platforms
 
-This library is designed to run on a Raspberry Pi and also works on
-other systems as long as they have Python 3 and either the
-[smbus2] library (for I&sup2;C) or the [pySerial] library (for UART serial).
-The smbus2 library generally only works on single-board Linux machines with
-an I&sup2;C bus.  The pySerial library works on a wide variety of platforms.
+This library is designed to run on any Python 3 or MicroPython interpeter
+that has a working (including access to compatible hardware)
+version of one of the following Python libraries:
+
+- [smbus2]
+- [pySerial]
+- [machine.I2C]
+- [machine.UART]
+
+We have mainly tested this library on Raspberry Pi single-board Linux computers
+and MicroPython-compatible RP2040 development boards such as the
+Raspberry Pi Pico.
 
 This library does **not** support Python 2.
 
-## Getting started
+## Getting started on Raspberry Pi OS using I&sup2;C
 
-This library depends on Python 3 and the easiest way to download the library
-is to use git.
+Run the following commands to install prerequisities, download this library,
+and install this library:
 
-To install these programs on Raspberry Pi OS, run:
-
-    sudo apt-get install git python3-dev python3-pip
-
-To install these programs on [MSYS2], run:
-
-    pacman -S git $MINGW_PACKAGE_PREFIX-python3
-
-To download and install the library, run:
-
-    git clone https://github.com/pololu/motoron-rpi.git
-    cd motoron-rpi
-    sudo python3 setup.py install
-
-(Omit the `sudo` if you are using MSYS2.)
-
-### Getting started with I&sup2;C
-
-If you want to use I&sup2;C, you will need to install [smbus2]:
-
+    sudo apt install git python3-dev python3-pip
     sudo pip3 install smbus2
+    git clone https://github.com/pololu/motoron-python.git
+    cd motoron-python
+    sudo python3 setup.py install
 
 You will also need to enable I&sup2;C, figure out which I&sup2;C bus to use,
 set up the I&sup2;C device permissions properly
@@ -61,17 +58,20 @@ set up the I&sup2;C device permissions properly
 Raspberry Pi's I&sup2;C bus.  If you are not sure how to do those things,
 see the "Getting started" sections of the [Motoron user's guide][guide].
 
-### Getting started with serial
+The examples relevant to this setup are named `i2c_*.py`.
+Run `./i2c_simple_example.py` inside the library directory to execute the
+simplest example.
 
-If you want to use UART serial, you will need to install [pySerial].
-You can typically install this with the following command:
+## Getting started on Raspberry Pi OS using UART serial
 
+Run the following commands to install prerequisities, download this library,
+and install this library:
+
+    sudo apt install git python3-dev python3-pip
     sudo pip3 install pyserial
-
-On MSYS2, the command above probably will not work, but you can install the
-pySerial package provided by MSYS2 instead:
-
-    pacman -S $MINGW_PACKAGE_PREFIX-python-pyserial
+    git clone https://github.com/pololu/motoron-python.git
+    cd motoron-python
+    sudo python3 setup.py install
 
 You will need to make sure that your machine has a serial port that
 pySerial can connect to.  This is typically an integrated serial port that is
@@ -84,14 +84,17 @@ If it does not exist, you should enable it by running
 You should also add yourself to the `dialout` group by running
 `sudo usermod -a -G dialout $(whoami)`, logging out, and logging back in again.
 
-## Examples
+The examples relevant to this setup are named `serial_*.py`.
+Run `./serial_simple_example.py` inside the library directory to execute the
+simplest example.
 
-Several example programs come with the library.  They are single-file
-Python programs that have names ending with `_example.py`.
+## Getting started on MicroPython
 
-You can run an example program by typing the path to the example.  For example,
-if you are in the `motoron-rpi` directory, type `./i2c_simple_example.py`
-to run that example.
+The examples that work with MicroPython have names starting with `mpy_`.
+You can run one of these examples by renaming it to `main.py`,
+copying it to your board, and then rebooting your board.
+The files `motoron.py` and `motoron_protocol.py` also need to be copied
+to the board.
 
 ## Troubleshooting
 
@@ -121,6 +124,14 @@ access `/dev/serial0`.  On a Raspberry Pi, you can fix this by running
 The error message above occurs on Windows if another program is using the
 serial port you are trying to open.
 
+## Files
+
+The essential code for the library is in just two files: `motoron.py` and
+`motoron_protocol.py`.
+
+Several example programs come with the library.  They are single-file
+Python programs that have names ending with `_example.py`.
+
 ## Classes
 
 The main classes provided by this library are motoron.MotoronI2C and
@@ -129,7 +140,7 @@ motoron.MotoronSerial.  Each of these is a subclass of motoron.MotoronBase.
 ## Documentation
 
 For complete documentation of this library, see
-[the motoron-rpi documentation][doc].
+[the motoron-python documentation][doc].
 If you are already on that page, then click the links in the "Classes" section
 above.
 
@@ -143,12 +154,28 @@ feature using motoron.MotoronBase.disable_command_timeout.
 
 ## Version history
 
+* 2.0.0 (2023-06-09):
+  - Changed the repository name from motoron-rpi to motoron-python.
+  - Added MicroPython support and examples for the RP2040.
+  - The `read_eeprom` and `get_variables` methods now return `bytes`
+    objects instead of a list of integers, which allows the return
+    value to be used with `int.from_bytes` and `struct.unpack` in MicroPython.
+    Pass the return value to `list()` if you want a list.
+  - Added support for the new 550 class Motorons.
+  - The `get_vin_voltage_mv` method now takes an optional `type` parameter to
+    specify what scaling to apply.
 * 1.2.0 (2022-12-23): Added support for the [M2T256] and [M2U256] motorons.
   This version also supports the later-released [M1T256] and [M1U256].
 * 1.1.0 (2022-08-05): Added support for the [M2S] and [M2H] Motorons.
 * 1.0.0 (2022-05-13): Original release.
 
 [motoron]: https://pololu.com/motoron
+[M1T550]: https://www.pololu.com/product/5075
+[M1U550]: https://www.pololu.com/product/5077
+[M2T550]: https://www.pololu.com/product/5079
+[M2U550]: https://www.pololu.com/product/5081
+[M3S550]: https://www.pololu.com/category/304
+[M3H550]: https://www.pololu.com/category/305
 [M1T256]: https://www.pololu.com/product/5061
 [M1U256]: https://www.pololu.com/product/5063
 [M2T256]: https://www.pololu.com/product/5065
@@ -157,8 +184,10 @@ feature using motoron.MotoronBase.disable_command_timeout.
 [M3H256]: https://www.pololu.com/category/292
 [M2S]: https://www.pololu.com/category/291
 [M2H]: https://www.pololu.com/category/293
-[doc]: https://pololu.github.io/motoron-rpi/
+[doc]: https://pololu.github.io/motoron-python/
 [guide]: https://www.pololu.com/docs/0J84
 [smbus2]: https://github.com/kplindegaard/smbus2
 [pySerial]: https://github.com/pyserial/pyserial/
+[machine.I2C]: https://docs.micropython.org/en/latest/library/machine.I2C.html
+[machine.UART]: https://docs.micropython.org/en/latest/library/machine.UART.html
 [MSYS2]: https://www.msys2.org/

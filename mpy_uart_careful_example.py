@@ -1,28 +1,29 @@
-#!/usr/bin/env python3
-
-# This example shows how to control the Motoron Motor Controller if you want to
+# This example shows how to control the Motoron Motor Controller serial
+# interface using the machine.UART class in MicroPython if you want to
 # shut down the motors whenever any problems are detected.
 #
 # The motors will stop and this program will terminate if:
 # - Motor power (VIN) is interrupted
 # - A motor fault occurs
 # - A protocol error or CRC error occurs
-# - The underlying Python I2C library reports an error
+# - The underlying Python serial library reports an error
 # - A command timeout occurs
 # - The Motoron experiences a reset
 
 import sys
 import time
 import motoron
+from machine import UART, Pin
 
-mc = motoron.MotoronI2C()
+port = UART(1, 115200, tx=Pin(4), rx=Pin(5), timeout=100)
+mc = motoron.MotoronSerial(port=port)
 
 # Parameters for the VIN voltage measurement.
 reference_mv = 3300
 vin_type = motoron.VinSenseType.MOTORON_256
 
-# Minimum allowed VIN voltage.  This example is aborts if the voltage drops
-# below this configurable level.
+# Minimum allowed VIN voltage.  You can change this to be closer to your power
+# supply's expected voltage.
 min_vin_voltage_mv = 4500
 
 # Define which status flags the Motoron should treat as errors.
@@ -32,6 +33,7 @@ error_mask = (
   (1 << motoron.STATUS_FLAG_COMMAND_TIMEOUT_LATCHED) |
   (1 << motoron.STATUS_FLAG_MOTOR_FAULT_LATCHED) |
   (1 << motoron.STATUS_FLAG_NO_POWER_LATCHED) |
+  (1 << motoron.STATUS_FLAG_UART_ERROR) |
   (1 << motoron.STATUS_FLAG_RESET) |
   (1 << motoron.STATUS_FLAG_COMMAND_TIMEOUT))
 
@@ -77,17 +79,11 @@ def check_for_problems():
 try:
   while True:
     check_for_problems()
-
-    if int(time.monotonic() * 1000) & 2048:
+    if time.ticks_ms() & 2048:
       mc.set_speed(1, 800)
     else:
       mc.set_speed(1, -800)
 
-    time.sleep(0.005)
-
-except KeyboardInterrupt:
-  mc.reset()
-  pass
-except Exception:
+except:
   mc.reset()
   raise
