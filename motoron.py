@@ -20,7 +20,7 @@ from motoron_protocol import *
 ## Raspberry Pi.
 ##
 ## For more information about the library, see the main repository at:
-## https://github.com/pololu/motoron-rpi
+## https://github.com/pololu/motoron-python
 
 class CurrentSenseType(Enum):
   MOTORON_18V18 = 0b0001

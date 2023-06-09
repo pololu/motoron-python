@@ -49,8 +49,8 @@ and install this library:
 
     sudo apt-get install git python3-dev python3-pip
     sudo pip3 install smbus2
-    git clone https://github.com/pololu/motoron-rpi.git
-    cd motoron-rpi
+    git clone https://github.com/pololu/motoron-python.git
+    cd motoron-python
     sudo python3 setup.py install
 
 You will also need to enable I&sup2;C, figure out which I&sup2;C bus to use,
@@ -70,8 +70,8 @@ and install this library:
 
     sudo apt-get install git python3-dev python3-pip
     sudo pip3 install pyserial
-    git clone https://github.com/pololu/motoron-rpi.git
-    cd motoron-rpi
+    git clone https://github.com/pololu/motoron-python.git
+    cd motoron-python
     sudo python3 setup.py install
 
 You will need to make sure that your machine has a serial port that
@@ -141,7 +141,7 @@ motoron.MotoronSerial.  Each of these is a subclass of motoron.MotoronBase.
 ## Documentation
 
 For complete documentation of this library, see
-[the motoron-rpi documentation][doc].
+[the motoron-python documentation][doc].
 If you are already on that page, then click the links in the "Classes" section
 above.
 
@@ -185,7 +185,7 @@ feature using motoron.MotoronBase.disable_command_timeout.
 [M3H256]: https://www.pololu.com/category/292
 [M2S]: https://www.pololu.com/category/291
 [M2H]: https://www.pololu.com/category/293
-[doc]: https://pololu.github.io/motoron-rpi/
+[doc]: https://pololu.github.io/motoron-python/
 [guide]: https://www.pololu.com/docs/0J84
 [smbus2]: https://github.com/kplindegaard/smbus2
 [pySerial]: https://github.com/pyserial/pyserial/
