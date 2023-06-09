@@ -46,7 +46,7 @@ This library does **not** support Python 2.
 Run the following commands to install prerequisities, download this library,
 and install this library:
 
-    sudo apt-get install git python3-dev python3-pip
+    sudo apt install git python3-dev python3-pip
     sudo pip3 install smbus2
     git clone https://github.com/pololu/motoron-python.git
     cd motoron-python
@@ -67,7 +67,7 @@ simplest example.
 Run the following commands to install prerequisities, download this library,
 and install this library:
 
-    sudo apt-get install git python3-dev python3-pip
+    sudo apt install git python3-dev python3-pip
     sudo pip3 install pyserial
     git clone https://github.com/pololu/motoron-python.git
     cd motoron-python
