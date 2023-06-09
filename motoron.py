@@ -1652,7 +1652,7 @@ def current_sense_units_milliamps(type, reference_mv):
   \param reference_mv The reference voltage (IOREF), in millivolts.
     For example, use 3300 for a 3.3 V system or 5000 for a 5 V system.
   """
-  return reference_mv * (enum_value(e) & 3) * 25 / 512
+  return reference_mv * (enum_value(type) & 3) * 25 / 512
 
 class MotoronI2C(MotoronBase):
   """
