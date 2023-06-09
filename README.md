@@ -41,7 +41,7 @@ examples to properly initialize an I2C or UART object for your hardware.
 
 This library does **not** support Python 2.
 
-## Getting started
+## Getting started on a Raspberry Pi
 
 This library depends on Python 3 and the easiest way to download the library
 is to use git.
@@ -102,9 +102,15 @@ You should also add yourself to the `dialout` group by running
 Several example programs come with the library.  They are single-file
 Python programs that have names ending with `_example.py`.
 
-You can run an example program by typing the path to the example.  For example,
-if you are in the `motoron-rpi` directory, type `./i2c_simple_example.py`
-to run that example.
+On a Linux machine, you can run an example program by typing the path to
+the example.  For example, if you are in the `motoron-rpi` directory,
+type `./i2c_simple_example.py` to run that example.
+
+The examples that work with MicroPython have names starting with `mpy_`.
+You can run one of these examples by renaming it to `main.py`,
+copying it to your board, and then rebooting your board.
+The files `motoron.py` and `motoron_protocol.py` also need to be copied
+to the board.
 
 ## Troubleshooting
 
@@ -158,11 +164,13 @@ feature using motoron.MotoronBase.disable_command_timeout.
 
 * 2.0.0 (2023-06-09):
   - Added MicroPython support and examples for the RP2040.
-  - The `read_eeprom` and `get_variables` methods now return `bytes` or
-    `bytearray` objects instead of a list of integers.  Use `list()`
-    on the return value if you want a list.
-  - Added support for the new 550-class Motorons.
-  - The `get_vin_voltage_mv` method now takes an optional `type` parameter.
+  - The `read_eeprom` and `get_variables` methods now return `bytes`
+    objects instead of a list of integers, which allows the return
+    value to be used with `int.from_bytes` and `struct.unpack` in MicroPython.
+    Pass the return value to `list()` if you want a list.
+  - Added support for the new 550 class Motorons.
+  - The `get_vin_voltage_mv` method now takes an optional `type` parameter to
+    specify what scaling to apply.
 * 1.2.0 (2022-12-23): Added support for the [M2T256] and [M2U256] motorons.
   This version also supports the later-released [M1T256] and [M1U256].
 * 1.1.0 (2022-08-05): Added support for the [M2S] and [M2H] Motorons.

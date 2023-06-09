@@ -1733,9 +1733,10 @@ class MotoronI2C(MotoronBase):
     crc_enabled = bool(self.protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
     read = self._msg.read(self.address, length + crc_enabled)
     self.bus.i2c_rdwr(read)
-    response = bytearray(read)
+    response = bytes(read)
     if crc_enabled:
-      crc = response.pop()
+      crc = response[-1]
+      response = response[:-1]
       if crc != calculate_crc(response):
         raise RuntimeError('Incorrect CRC received.')
     return response
@@ -1750,7 +1751,6 @@ class MotoronI2C(MotoronBase):
     crc_enabled = bool(self.protocol_options & (1 << PROTOCOL_OPTION_CRC_FOR_RESPONSES))
     response = self.bus.readfrom(self.address, length + crc_enabled)
     if crc_enabled:
-      # MicroPython does not support bytearray.pop()
       crc = response[-1]
       response = response[:-1]
       if crc != calculate_crc(response):
@@ -1970,18 +1970,17 @@ class MotoronSerial(MotoronBase):
       raise RuntimeError(f"Expected to read {read_length} bytes, got {len(response)}.")
 
     if crc_enabled:
-      # MicroPython does not support: crc = response.pop()
       crc = response[-1]
       response = response[:-1]
       if crc != calculate_crc(response):
         raise RuntimeError('Incorrect CRC received.')
 
     if response_7bit:
-      # MicroPython does not support: msbs = response.pop()
       msbs = response[-1]
       response = bytearray(response[:-1])
       for i in range(length):
         if msbs & 1: response[i] |= 0x80
         msbs >>= 1
+      response = bytes(response)
 
     return response
