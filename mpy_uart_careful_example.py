@@ -20,8 +20,9 @@ from machine import UART, Pin
 port = UART(1, 115200, tx=Pin(4), rx=Pin(5), timeout=100)
 mc = motoron.MotoronSerial(port=port)
 
-# ADC reference voltage
+# Parameters for the VIN voltage measurement.
 reference_mv = 3300
+vin_type = motoron.VinSenseType.MOTORON_256
 
 # Minimum allowed VIN voltage.  You can change this to be closer to your power
 # supply's expected voltage.
@@ -71,7 +72,7 @@ def check_for_problems():
     print("Controller error: 0x%x" % status, file=sys.stderr)
     sys.exit(1)
 
-  voltage_mv = mc.get_vin_voltage_mv(reference_mv)
+  voltage_mv = mc.get_vin_voltage_mv(reference_mv, vin_type)
   if voltage_mv < min_vin_voltage_mv:
     mc.reset()
     print("VIN voltage too low:", voltage_mv, file=sys.stderr)

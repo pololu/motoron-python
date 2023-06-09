@@ -18,8 +18,9 @@ from machine import I2C, Pin
 bus = I2C(0, scl=Pin(5), sda=Pin(4))
 mc = motoron.MotoronI2C(bus=bus)
 
-# ADC reference voltage
+# Parameters for the VIN voltage measurement.
 reference_mv = 3300
+vin_type = motoron.VinSenseType.MOTORON_256
 
 # Minimum allowed VIN voltage.  This example is aborts if the voltage drops
 # below this configurable level.
@@ -68,7 +69,7 @@ def check_for_problems():
     print("Controller error: 0x%x" % status, file=sys.stderr)
     sys.exit(1)
 
-  voltage_mv = mc.get_vin_voltage_mv(reference_mv)
+  voltage_mv = mc.get_vin_voltage_mv(reference_mv, vin_type)
   if voltage_mv < min_vin_voltage_mv:
     mc.reset()
     print("VIN voltage too low:", voltage_mv, file=sys.stderr)
