@@ -9,6 +9,12 @@ This is a Python 3 library that helps interface with
 
 It supports the following Motoron controllers:
 
+- [Motoron M1T550 Single I&sup2;C Motor Controller][M1T550]
+- [Motoron M1U550 Single Serial Motor Controller][M1U550]
+- [Motoron M2T550 Dual I&sup2;C Motor Controller][M2T550]
+- [Motoron M2U550 Dual Serial Motor Controller][M2U550]
+- [Motoron M3S550 Triple Motor Controller Shield for Arduino][M3S550]
+- [Motoron M3H550 Triple Motor Controller for Raspberry Pi][M3H550]
 - [Motoron M1T256 Single I&sup2;C Motor Controller][M1T256]
 - [Motoron M1U256 Single Serial Motor Controller][M1U256]
 - [Motoron M2T256 Dual I&sup2;C Motor Controller][M2T256]
@@ -150,16 +156,25 @@ feature using motoron.MotoronBase.disable_command_timeout.
 
 ## Version history
 
-* 2.0.0 (2023-05-09): Added MicroPython support and examples for the RP2040.
-  The `read_eeprom` and `get_variables` methods now return `bytes` or `bytearray`
-  objects instead of a list of integers.  Use `list()` on the return value
-  if you want a list.
+* 2.0.0 (2023-06-09):
+  - Added MicroPython support and examples for the RP2040.
+  - The `read_eeprom` and `get_variables` methods now return `bytes` or
+    `bytearray` objects instead of a list of integers.  Use `list()`
+    on the return value if you want a list.
+  - Added support for the new 550-class Motorons.
+  - The `get_vin_voltage_mv` method now takes an optional `type` parameter.
 * 1.2.0 (2022-12-23): Added support for the [M2T256] and [M2U256] motorons.
   This version also supports the later-released [M1T256] and [M1U256].
 * 1.1.0 (2022-08-05): Added support for the [M2S] and [M2H] Motorons.
 * 1.0.0 (2022-05-13): Original release.
 
 [motoron]: https://pololu.com/motoron
+[M1T550]: https://www.pololu.com/product/5075
+[M1U550]: https://www.pololu.com/product/5077
+[M2T550]: https://www.pololu.com/product/5079
+[M2U550]: https://www.pololu.com/product/5081
+[M3S550]: https://www.pololu.com/category/304
+[M3H550]: https://www.pololu.com/category/305
 [M1T256]: https://www.pololu.com/product/5061
 [M1U256]: https://www.pololu.com/product/5063
 [M2T256]: https://www.pololu.com/product/5065
