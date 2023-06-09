@@ -10,10 +10,6 @@
 # - The underlying Python I2C library reports an error
 # - A command timeout occurs
 # - The Motoron experiences a reset
-#
-# Note: If your Motoron has fewer than three motor channels, you should remove
-# the commands that operate on the motors your controller does not have.
-# Otherwise, those commands will cause a protocol error.
 
 import sys
 import time
@@ -54,14 +50,6 @@ mc.set_command_timeout_milliseconds(100)
 mc.set_max_acceleration(1, 140)
 mc.set_max_deceleration(1, 300)
 
-# Configure motor 2
-mc.set_max_acceleration(2, 200)
-mc.set_max_deceleration(2, 300)
-
-# Configure motor 3
-mc.set_max_acceleration(3, 80)
-mc.set_max_deceleration(3, 300)
-
 # Depending on what was happening before this program started, the motors will
 # either be stopped or decelerating.  This loop waits for them to stop so that
 # when the rest of the code starts running, it will run from a more predictable
@@ -93,9 +81,6 @@ try:
       mc.set_speed(1, 800)
     else:
       mc.set_speed(1, -800)
-
-    mc.set_speed(2, 100)
-    mc.set_speed(3, -100)
 
     time.sleep(0.005)
 
