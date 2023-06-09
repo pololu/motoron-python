@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # This example shows how to control the Motoron Motor Controller serial
 # interface using the machine.UART class in MicroPython if you want to
 # shut down the motors whenever any problems are detected.
