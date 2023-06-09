@@ -28,6 +28,11 @@ class CurrentSenseType(Enum):
   MOTORON_18V20 = 0b1010
   MOTORON_24V16 = 0b1101
 
+class VinSenseType(Enum):
+  MOTORON_256 =  0b0000  # M*256 Motorons
+  MOTORON_HP  =  0b0010  # High-power Motorons
+  MOTORON_550 =  0b0011  # M*550 Motorons
+
 class MotoronBase():
   """
   Represents a connection to a Pololu Motoron Motoron Controller.
@@ -614,7 +619,7 @@ class MotoronBase():
     """
     return self.get_var_u16(0, VAR_VIN_VOLTAGE)
 
-  def get_vin_voltage_mv(self, reference_mv=3300):
+  def get_vin_voltage_mv(self, reference_mv=3300, type=VinSenseType.MOTORON_256):
     """
     Reads the voltage on the Motoron's VIN pin and converts it to millivolts.
 
@@ -625,10 +630,13 @@ class MotoronBase():
       (voltage on the 3V3 pin), in millivolts.  This is assumed to be 3300 by
       default, but you can provide a different value for a more accurate
       conversion.
+    \param type Specifies what type of Motoron you are using.  This should be one
+      of the members of the motoron.VinSenseType enum.
 
     \sa get_vin_voltage()
     """
-    return self.get_vin_voltage() * reference_mv / 1024 * 1047 / 47
+    scale = 459 if enum_value(type) & 1 else 1047
+    return self.get_vin_voltage() * reference_mv / 1024 * scale / 47
 
   def get_command_timeout_milliseconds(self):
     """
