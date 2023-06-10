@@ -22,7 +22,7 @@ mc = motoron.MotoronI2C(bus=bus)
 reference_mv = 3300
 vin_type = motoron.VinSenseType.MOTORON_256
 
-# Minimum allowed VIN voltage.  This example is aborts if the voltage drops
+# Minimum allowed VIN voltage.  This example aborts if the voltage drops
 # below this configurable level.
 min_vin_voltage_mv = 4500
 
