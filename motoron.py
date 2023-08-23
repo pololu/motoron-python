@@ -626,10 +626,8 @@ class MotoronBase():
     For more information, see the "VIN voltage" variable in the Motoron
     user's guide.
 
-    \param reference_mv Optional argument that specifies the reference voltage
-      (voltage on the 3V3 pin), in millivolts.  This is assumed to be 3300 by
-      default, but you can provide a different value for a more accurate
-      conversion.
+    \param reference_mv The logic voltage of the Motoron, in millivolts.
+      This is assumed to be 3300 by default.
     \param type Specifies what type of Motoron you are using.  This should be one
       of the members of the motoron.VinSenseType enum.
 
