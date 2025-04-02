@@ -102,7 +102,7 @@ class MotoronBase():
     even if CRC was previously disabled but has been re-enabled on the device
     (e.g. due to a reset).
 
-    The \p options argument should be 0 or combination of the following
+    The @p options argument should be 0 or combination of the following
     expressions made using the bitwise or operator (|):
     - (1 << motoron.PROTOCOL_OPTION_CRC_FOR_COMMANDS)
     - (1 << motoron.PROTOCOL_OPTION_CRC_FOR_RESPONSES)
@@ -111,7 +111,7 @@ class MotoronBase():
     For more information, see the "Set protocol optons"
     command in the Motoron user's guide.
 
-    \sa enable_crc(), disable_crc(),
+    @sa enable_crc(), disable_crc(),
       enable_crc_for_commands(), disable_crc_for_commands(),
       enable_crc_for_responses(), disable_crc_for_responses(),
       enable_i2c_general_call(), disable_i2c_general_call()
@@ -280,7 +280,7 @@ class MotoronBase():
     EEPROM memory of the Motoron's microcontroller is only rated for
     100,000 erase/write cycles.**
 
-    \sa write_eeprom_disable_alternative_device_number()
+    @sa write_eeprom_disable_alternative_device_number()
     """
     self.write_eeprom(SETTING_ALTERNATIVE_DEVICE_NUMBER, (number & 0x7F) | 0x80)
     self.write_eeprom(SETTING_ALTERNATIVE_DEVICE_NUMBER + 1, number >> 7 & 0x7F)
@@ -296,7 +296,7 @@ class MotoronBase():
     EEPROM memory of the Motoron's microcontroller is only rated for
     100,000 erase/write cycles.**
 
-    \sa write_eeprom_alternative_device_number()
+    @sa write_eeprom_alternative_device_number()
     """
     self.write_eeprom(SETTING_ALTERNATIVE_DEVICE_NUMBER, 0)
     self.write_eeprom(SETTING_ALTERNATIVE_DEVICE_NUMBER + 1, 0)
@@ -356,7 +356,7 @@ class MotoronBase():
     For more information, see the "Reinitialize" command in the Motoron
     user's guide.
 
-    \sa reset()
+    @sa reset()
     """
     # Always send the reinitialize command with a CRC byte to make it more reliable.
     cmd = [CMD_REINITIALIZE]
@@ -374,13 +374,13 @@ class MotoronBase():
     After running this command, we recommend waiting for at least 5
     milliseconds before you try to communicate with the Motoron.
 
-    \param ignore_nack Optional argument: if `True` (the default), this method
+    @param ignore_nack Optional argument: if `True` (the default), this method
       ignores a NACK error if it occurs on sending the Reset command. This is
       useful in case the Motoron has CRC off and executes the reset before it
       can ACK the CRC byte (which this method always sends to make it more
       reliable).
 
-    \sa reinitialize()
+    @sa reinitialize()
     """
     # Always send the reset command with a CRC byte to make it more reliable.
     cmd = [CMD_RESET]
@@ -401,10 +401,10 @@ class MotoronBase():
     is useful if you want to get the raw bytes, or if you want to read
     multiple consecutive variables at the same time for efficiency.
 
-    \param motor 0 to read general variables, or a motor number to read
+    @param motor 0 to read general variables, or a motor number to read
       motor-specific variables.
-    \param offset The location of the first byte to read.
-    \param length How many bytes to read.
+    @param offset The location of the first byte to read.
+    @param length How many bytes to read.
     """
     cmd = [
       CMD_GET_VARIABLES,
@@ -419,9 +419,9 @@ class MotoronBase():
     Reads one byte from the Motoron using a "Get variables" command
     and returns the result as an unsigned 8-bit integer.
 
-    \param motor 0 to read a general variable, or a motor number to read
+    @param motor 0 to read a general variable, or a motor number to read
       a motor-specific variable.
-    \param offset The location of the byte to read.
+    @param offset The location of the byte to read.
     """
     return self.get_variables(motor, offset, 1)[0]
 
@@ -430,9 +430,9 @@ class MotoronBase():
     Reads two bytes from the Motoron using a "Get variables" command
     and returns the result as an unsigned 16-bit integer.
 
-    \param motor 0 to read general variables, or a motor number to read
+    @param motor 0 to read general variables, or a motor number to read
       motor-specific variables.
-    \param offset The location of the first byte to read.
+    @param offset The location of the first byte to read.
     """
     buffer = self.get_variables(motor, offset, 2)
     return struct.unpack('<H', buffer)[0]
@@ -442,9 +442,9 @@ class MotoronBase():
     Reads two bytes from the Motoron using a "Get variables" command
     and returns the result as a signed 16-bit integer.
 
-    \param motor 0 to read general variables, or a motor number to read
+    @param motor 0 to read general variables, or a motor number to read
       motor-specific variables.
-    \param offset The location of the first byte to read.
+    @param offset The location of the first byte to read.
     """
     buffer = self.get_variables(motor, offset, 2)
     return struct.unpack('<h', buffer)[0]
@@ -615,7 +615,7 @@ class MotoronBase():
     For more information, see the "VIN voltage" variable in the Motoron
     user's guide.
 
-    \sa get_vin_voltage_mv()
+    @sa get_vin_voltage_mv()
     """
     return self.get_var_u16(0, VAR_VIN_VOLTAGE)
 
@@ -626,12 +626,12 @@ class MotoronBase():
     For more information, see the "VIN voltage" variable in the Motoron
     user's guide.
 
-    \param reference_mv The logic voltage of the Motoron, in millivolts.
+    @param reference_mv The logic voltage of the Motoron, in millivolts.
       This is assumed to be 3300 by default.
-    \param type Specifies what type of Motoron you are using.  This should be one
+    @param type Specifies what type of Motoron you are using.  This should be one
       of the members of the motoron.VinSenseType enum.
 
-    \sa get_vin_voltage()
+    @sa get_vin_voltage()
     """
     scale = 459 if enum_value(type) & 1 else 1047
     return self.get_vin_voltage() * reference_mv / 1024 * scale / 47
@@ -643,7 +643,7 @@ class MotoronBase():
     For more information, see the "Command timeout" variable in the Motoron
     user's guide.
 
-    \sa set_command_timeout_milliseconds()
+    @sa set_command_timeout_milliseconds()
     """
     return self.get_var_u16(0, VAR_COMMAND_TIMEOUT) * 4
 
@@ -655,7 +655,7 @@ class MotoronBase():
     For more information, see the "Error response" variable in the Motoron
     user's guide.
 
-    \sa set_error_response()
+    @sa set_error_response()
     """
     return self.get_var_u8(0, VAR_ERROR_RESPONSE)
 
@@ -667,7 +667,7 @@ class MotoronBase():
     For more information, see the "Error mask" variable in the Motoron
     user's guide.
 
-    \sa set_error_mask()
+    @sa set_error_mask()
     """
     return self.get_var_u16(0, VAR_ERROR_MASK)
 
@@ -688,7 +688,7 @@ class MotoronBase():
     For more information, see the "Target speed" variable in the Motoron
     user's guide.
 
-    \sa set_speed(), set_all_speeds(), set_all_speeds_using_buffers()
+    @sa set_speed(), set_all_speeds(), set_all_speeds_using_buffers()
     """
     return self.get_var_s16(motor, MVAR_TARGET_SPEED)
 
@@ -699,7 +699,7 @@ class MotoronBase():
     For more information, see the "Target speed" variable in the Motoron
     user's guide.
 
-    \sa set_target_brake_amount()
+    @sa set_target_brake_amount()
     """
     return self.get_var_u16(motor, MVAR_TARGET_BRAKE_AMOUNT)
 
@@ -711,7 +711,7 @@ class MotoronBase():
     For more information, see the "Target speed" variable in the Motoron
     user's guide.
 
-    \sa set_speed_now(), set_all_speeds_now(), set_all_speeds_now_using_buffers()
+    @sa set_speed_now(), set_all_speeds_now(), set_all_speeds_now_using_buffers()
     """
     return self.get_var_s16(motor, MVAR_CURRENT_SPEED)
 
@@ -722,7 +722,7 @@ class MotoronBase():
     For more information, see the "Buffered speed" variable in the Motoron
     user's guide.
 
-    \sa set_buffered_speed(), set_all_buffered_speeds()
+    @sa set_buffered_speed(), set_all_buffered_speeds()
     """
     return self.get_var_s16(motor, MVAR_BUFFERED_SPEED)
 
@@ -733,7 +733,7 @@ class MotoronBase():
     For more information, see the "PWM mode" variable in the Motoron
     user's guide.
 
-    \sa set_pwm_mode()
+    @sa set_pwm_mode()
     """
     return self.get_var_u8(motor, MVAR_PWM_MODE)
 
@@ -745,7 +745,7 @@ class MotoronBase():
     For more information, see the "Max acceleration forward" variable in the
     Motoron user's guide.
 
-    \sa set_max_acceleration(), set_max_acceleration_forward()
+    @sa set_max_acceleration(), set_max_acceleration_forward()
     """
     return self.get_var_u16(motor, MVAR_MAX_ACCEL_FORWARD)
 
@@ -757,7 +757,7 @@ class MotoronBase():
     For more information, see the "Max acceleration reverse" variable in the
     Motoron user's guide.
 
-    \sa set_max_acceleration(), set_max_acceleration_reverse()
+    @sa set_max_acceleration(), set_max_acceleration_reverse()
     """
     return self.get_var_u16(motor, MVAR_MAX_ACCEL_REVERSE)
 
@@ -769,7 +769,7 @@ class MotoronBase():
     For more information, see the "Max deceleration forward" variable in the
     Motoron user's guide.
 
-    \sa set_max_deceleration(), set_max_deceleration_forward()
+    @sa set_max_deceleration(), set_max_deceleration_forward()
     """
     return self.get_var_u16(motor, MVAR_MAX_DECEL_FORWARD)
 
@@ -781,12 +781,12 @@ class MotoronBase():
     For more information, see the "Max deceleration reverse" variable in the
     Motoron user's guide.
 
-    \sa set_max_deceleration(), set_max_deceleration_reverse()
+    @sa set_max_deceleration(), set_max_deceleration_reverse()
     """
     return self.get_var_u16(motor, MVAR_MAX_DECEL_REVERSE)
 
 
-# \cond
+# @cond
 
   # This function is used by Pololu for testing.
   def get_max_deceleration_temporary(self, motor):
@@ -801,7 +801,7 @@ class MotoronBase():
     For more information, see the "Starting speed forward" variable in the
     Motoron user's guide.
 
-    \sa set_starting_speed(), set_starting_speed_forward()
+    @sa set_starting_speed(), set_starting_speed_forward()
     """
     return self.get_var_u16(motor, MVAR_STARTING_SPEED_FORWARD)
 
@@ -812,7 +812,7 @@ class MotoronBase():
     For more information, see the "Starting speed reverse" variable in the
     Motoron user's guide.
 
-    \sa set_starting_speed(), set_starting_speed_reverse()
+    @sa set_starting_speed(), set_starting_speed_reverse()
     """
     return self.get_var_u16(motor, MVAR_STARTING_SPEED_REVERSE)
 
@@ -824,7 +824,7 @@ class MotoronBase():
     For more information, see the "Direction change delay forward" variable
     in the Motoron user's guide.
 
-    \sa set_direction_change_delay(), set_direction_change_delay_forward()
+    @sa set_direction_change_delay(), set_direction_change_delay_forward()
     """
     return self.get_var_u8(motor, MVAR_DIRECTION_CHANGE_DELAY_FORWARD)
 
@@ -836,7 +836,7 @@ class MotoronBase():
     For more information, see the "Direction change delay reverse" variable
     in the Motoron user's guide.
 
-    \sa set_direction_change_delay(), set_direction_change_delay_reverse()
+    @sa set_direction_change_delay(), set_direction_change_delay_reverse()
     """
     return self.get_var_u8(motor, MVAR_DIRECTION_CHANGE_DELAY_REVERSE)
 
@@ -849,7 +849,7 @@ class MotoronBase():
     For more information, see the "Current limit" variable in the Motoron user's
     guide.
 
-    \sa set_current_limit()
+    @sa set_current_limit()
     """
     return self.get_var_u16(motor, MVAR_CURRENT_LIMIT)
 
@@ -865,7 +865,7 @@ class MotoronBase():
 
     This only works for the high-power Motorons.
 
-    \sa get_current_sense_raw_and_speed(), get_current_sense_processed_and_speed()
+    @sa get_current_sense_raw_and_speed(), get_current_sense_processed_and_speed()
     """
     buffer = self.get_variables(motor, MVAR_CURRENT_SENSE_RAW, 6)
     raw, speed, processed = struct.unpack('<HhH', buffer)
@@ -902,7 +902,7 @@ class MotoronBase():
     For more information, see the "Current sense raw" variable
     in the Motoron user's guide.
 
-    \sa get_current_sense_reading()
+    @sa get_current_sense_reading()
     """
     return self.get_var_u16(motor, MVAR_CURRENT_SENSE_RAW)
 
@@ -925,7 +925,7 @@ class MotoronBase():
     Note that this reading will be 0xFFFF if an overflow happens during the
     calculation due to very high current.
 
-    \sa get_current_sense_processed_and_speed()
+    @sa get_current_sense_processed_and_speed()
     """
     return self.get_var_u16(motor, MVAR_CURRENT_SENSE_PROCESSED)
 
@@ -938,7 +938,7 @@ class MotoronBase():
     For more information, see the "Current sense offset" variable in the
     Motoron user's guide.
 
-    \sa set_current_sense_offset()
+    @sa set_current_sense_offset()
     """
     return self.get_var_u8(motor, MVAR_CURRENT_SENSE_OFFSET)
 
@@ -952,7 +952,7 @@ class MotoronBase():
     For more information, see the "Current sense minimum divisor" variable in
     the Motoron user's guide.
 
-    \sa set_current_sense_minimum_divisor()
+    @sa set_current_sense_minimum_divisor()
     """
     return self.get_var_u8(motor, MVAR_CURRENT_SENSE_MINIMUM_DIVISOR) << 2
 
@@ -964,13 +964,13 @@ class MotoronBase():
     This library has helper methods to set every variable, so you should
     not need to call this function directly.
 
-    \param motor 0 to set a general variable, or a motor number to set
+    @param motor 0 to set a general variable, or a motor number to set
       motor-specific variables.
-    \param offset The address of the variable to set (only certain offsets
+    @param offset The address of the variable to set (only certain offsets
       are allowed).
-    \param value The value to set the variable to.
+    @param value The value to set the variable to.
 
-    \sa get_variables()
+    @sa get_variables()
     """
     if value > 0x3FFF: value = 0x3FFF
     cmd = [
@@ -989,7 +989,7 @@ class MotoronBase():
     For more information, see the "Command timeout" variable
     in the Motoron user's guide.
 
-    \sa disable_command_timeout(), get_command_timeout_milliseconds()
+    @sa disable_command_timeout(), get_command_timeout_milliseconds()
     """
     # Divide by 4, but round up.
     timeout = math.ceil(ms / 4)
@@ -1011,7 +1011,7 @@ class MotoronBase():
     For more information, see the "Error response" variable in the Motoron
     user's guide.
 
-    \sa get_error_response()
+    @sa get_error_response()
     """
     self.set_variable(0, VAR_ERROR_RESPONSE, response)
 
@@ -1023,7 +1023,7 @@ class MotoronBase():
     For more information, see the "Error mask" variable in the Motoron
     user's guide.
 
-    \sa get_error_mask(), get_status_flags()
+    @sa get_error_mask(), get_status_flags()
     """
     self.set_variable(0, VAR_ERROR_MASK, mask)
 
@@ -1043,7 +1043,7 @@ class MotoronBase():
     to configure which status flags are treated as errors, you do not need to
     use this function and you probably should not use this function.
 
-    \sa set_command_timeout_milliseconds(), set_error_mask()
+    @sa set_command_timeout_milliseconds(), set_error_mask()
     """
     self.set_error_mask(MotoronBase.DEFAULT_ERROR_MASK & ~(1 << STATUS_FLAG_COMMAND_TIMEOUT))
 
@@ -1067,7 +1067,7 @@ class MotoronBase():
     For more information, see the "PWM mode" variable in the Motoron user's
     guide.
 
-    \sa get_pwm_mode(self)
+    @sa get_pwm_mode(self)
     """
     self.set_variable(motor, MVAR_PWM_MODE, mode)
 
@@ -1079,7 +1079,7 @@ class MotoronBase():
     For more information, see the "Max acceleration forward" variable in the
     Motoron user's guide.
 
-    \sa set_max_acceleration(), get_max_acceleration_forward()
+    @sa set_max_acceleration(), get_max_acceleration_forward()
     """
     self.set_variable(motor, MVAR_MAX_ACCEL_FORWARD, accel)
 
@@ -1091,7 +1091,7 @@ class MotoronBase():
     For more information, see the "Max acceleration reverse" variable in the
     Motoron user's guide.
 
-    \sa set_max_acceleration(), get_max_acceleration_reverse()
+    @sa set_max_acceleration(), get_max_acceleration_reverse()
     """
     self.set_variable(motor, MVAR_MAX_ACCEL_REVERSE, accel)
 
@@ -1113,7 +1113,7 @@ class MotoronBase():
     For more information, see the "Max deceleration forward" variable in the
     Motoron user's guide.
 
-    \sa set_max_deceleration(), get_max_deceleration_forward()
+    @sa set_max_deceleration(), get_max_deceleration_forward()
     """
     self.set_variable(motor, MVAR_MAX_DECEL_FORWARD, decel)
 
@@ -1125,7 +1125,7 @@ class MotoronBase():
     For more information, see the "Max deceleration reverse" variable in the
     Motoron user's guide.
 
-    \sa set_max_deceleration(), get_max_deceleration_reverse()
+    @sa set_max_deceleration(), get_max_deceleration_reverse()
     """
     self.set_variable(motor, MVAR_MAX_DECEL_REVERSE, decel)
 
@@ -1147,7 +1147,7 @@ class MotoronBase():
     For more information, see the "Starting speed forward" variable in the
     Motoron user's guide.
 
-    \sa set_starting_speed(), get_starting_speed_forward()
+    @sa set_starting_speed(), get_starting_speed_forward()
     """
     self.set_variable(motor, MVAR_STARTING_SPEED_FORWARD, speed)
 
@@ -1159,7 +1159,7 @@ class MotoronBase():
     For more information, see the "Starting speed reverse" variable in the
     Motoron user's guide.
 
-    \sa set_starting_speed(), get_starting_speed_reverse()
+    @sa set_starting_speed(), get_starting_speed_reverse()
     """
     self.set_variable(motor, MVAR_STARTING_SPEED_REVERSE, speed)
 
@@ -1181,7 +1181,7 @@ class MotoronBase():
     For more information, see the "Direction change delay forward" variable
     in the Motoron user's guide.
 
-    \sa set_direction_change_delay(), get_direction_change_delay_forward()
+    @sa set_direction_change_delay(), get_direction_change_delay_forward()
     """
     self.set_variable(motor, MVAR_DIRECTION_CHANGE_DELAY_FORWARD, duration)
 
@@ -1193,7 +1193,7 @@ class MotoronBase():
     For more information, see the "Direction change delay reverse" variable
     in the Motoron user's guide.
 
-    \sa set_direction_change_delay(), get_direction_change_delay_reverse()
+    @sa set_direction_change_delay(), get_direction_change_delay_reverse()
     """
     self.set_variable(motor, MVAR_DIRECTION_CHANGE_DELAY_REVERSE, duration)
 
@@ -1219,7 +1219,7 @@ class MotoronBase():
     in the Motoron user's guide for more information, or see
     calculate_current_limit().
 
-    \sa get_current_limit()
+    @sa get_current_limit()
     """
     self.set_variable(motor, MVAR_CURRENT_LIMIT, limit)
 
@@ -1243,7 +1243,7 @@ class MotoronBase():
 
     This only works for the high-power Motorons.
 
-    \sa get_current_sense_offset()
+    @sa get_current_sense_offset()
     """
     self.set_variable(motor, MVAR_CURRENT_SENSE_OFFSET, offset)
 
@@ -1263,7 +1263,7 @@ class MotoronBase():
 
     This only works for the high-power Motorons.
 
-    \sa get_current_sense_minimum_divisor()
+    @sa get_current_sense_minimum_divisor()
     """
     self.set_variable(motor, MVAR_CURRENT_SENSE_MINIMUM_DIVISOR, speed >> 2)
 
@@ -1289,7 +1289,7 @@ class MotoronBase():
     For more information, see the "Clear motor fault" command in the Motoron
     user's guide.
 
-    \sa clear_motor_fault_unconditional(), get_motor_faulting_flag()
+    @sa clear_motor_fault_unconditional(), get_motor_faulting_flag()
     """
     cmd = [ CMD_CLEAR_MOTOR_FAULT, (flags & 0x7F) ]
     self._send_command(cmd)
@@ -1314,7 +1314,7 @@ class MotoronBase():
     For more information, see the "Clear latched status flags" command in the
     Motoron user's guide.
 
-    \sa get_status_flags(), set_latched_status_flags()
+    @sa get_status_flags(), set_latched_status_flags()
     """
     cmd = [
       CMD_CLEAR_LATCHED_STATUS_FLAGS,
@@ -1340,7 +1340,7 @@ class MotoronBase():
     is running, it will stop running its motors and it will not start them
     again until all the important settings have been configured.
 
-    \sa clear_latched_status_flags()
+    @sa clear_latched_status_flags()
     """
     self.clear_latched_status_flags(1 << STATUS_FLAG_RESET)
 
@@ -1354,7 +1354,7 @@ class MotoronBase():
     For more information, see the "Set latched status flags" command in the
     Motoron user's guide.
 
-    \sa get_status_flags(), set_latched_status_flags()
+    @sa get_status_flags(), set_latched_status_flags()
     """
     cmd = [
       CMD_SET_LATCHED_STATUS_FLAGS,
@@ -1379,7 +1379,7 @@ class MotoronBase():
     For more information, see the "Set speed" command in the Motoron
     user's guide.
 
-    \sa set_speed_now(), set_all_speeds()
+    @sa set_speed_now(), set_all_speeds()
     """
     cmd = [
       CMD_SET_SPEED,
@@ -1397,7 +1397,7 @@ class MotoronBase():
     For more information, see the "Set speed" command in the Motoron
     user's guide.
 
-    \sa set_speed(), set_all_speeds_now()
+    @sa set_speed(), set_all_speeds_now()
     """
     cmd = [
       CMD_SET_SPEED_NOW,
@@ -1418,7 +1418,7 @@ class MotoronBase():
     For more information, see the "Set speed" command in the Motoron
     user's guide.
 
-    \sa set_speed(), set_all_buffered_speeds(),
+    @sa set_speed(), set_all_buffered_speeds(),
       set_all_speeds_using_buffers(), set_all_speeds_now_using_buffers()
     """
     cmd = [
@@ -1455,7 +1455,7 @@ class MotoronBase():
     For more information, see the "Set all speeds" command in the Motoron
     user's guide.
 
-    \sa set_speed(), set_all_speeds_now(), set_all_buffered_speeds()
+    @sa set_speed(), set_all_speeds_now(), set_all_buffered_speeds()
     """
     cmd = [CMD_SET_ALL_SPEEDS]
     for speed in speeds:
@@ -1479,7 +1479,7 @@ class MotoronBase():
     For more information, see the "Set all speeds" command in the Motoron
     user's guide.
 
-    \sa set_speed(), set_speed_now(), set_all_speeds()
+    @sa set_speed(), set_speed_now(), set_all_speeds()
     """
     cmd = [CMD_SET_ALL_SPEEDS_NOW]
     for speed in speeds:
@@ -1504,7 +1504,7 @@ class MotoronBase():
     For more information, see the "Set all speeds" command in the Motoron
     user's guide.
 
-    \sa set_speed(), set_buffered_speed(), set_all_speeds(),
+    @sa set_speed(), set_buffered_speed(), set_all_speeds(),
       set_all_speeds_using_buffers(), set_all_speeds_now_using_buffers()
     """
     cmd = [CMD_SET_ALL_BUFFERED_SPEEDS]
@@ -1522,7 +1522,7 @@ class MotoronBase():
     This command is the same as set_all_speeds() except that the speeds are
     provided ahead of time using set_buffered_speed() or set_all_buffered_speeds().
 
-    \sa set_all_speeds_now_using_buffers(), set_buffered_speed(),
+    @sa set_all_speeds_now_using_buffers(), set_buffered_speed(),
       set_all_buffered_speeds()
     """
     cmd = [CMD_SET_ALL_SPEEDS_USING_BUFFERS]
@@ -1536,7 +1536,7 @@ class MotoronBase():
     This command is the same as set_all_speeds_now() except that the speeds are
     provided ahead of time using set_buffered_speed() or set_all_buffered_speeds().
 
-    \sa set_all_speeds_using_buffers(), set_buffered_speed(),
+    @sa set_all_speeds_using_buffers(), set_buffered_speed(),
       set_all_buffered_speeds()
     """
     cmd = [CMD_SET_ALL_SPEEDS_NOW_USING_BUFFERS]
@@ -1561,7 +1561,7 @@ class MotoronBase():
     See the "Set braking" command in the Motoron user's guide for more
     information.
 
-    \sa set_braking_now(), get_target_brake_amount()
+    @sa set_braking_now(), get_target_brake_amount()
     """
     cmd = [
       CMD_SET_BRAKING,
@@ -1589,7 +1589,7 @@ class MotoronBase():
     See the "Set braking" command in the Motoron user's guide for more
     information.
 
-    \sa set_braking(), get_target_brake_amount()
+    @sa set_braking(), get_target_brake_amount()
     """
     cmd = [
       CMD_SET_BRAKING_NOW,
@@ -1610,7 +1610,7 @@ class MotoronBase():
     For more information, see the "Reset command timeout" command in the
     Motoron user's guide.
 
-    \sa disable_command_timeout(), set_command_timeout_milliseconds()
+    @sa disable_command_timeout(), set_command_timeout_milliseconds()
     """
     cmd = [CMD_RESET_COMMAND_TIMEOUT]
     self._send_command(cmd)
@@ -1628,12 +1628,12 @@ def calculate_current_limit(milliamps, type, reference_mv, offset):
   Calculates a current limit value that can be passed to the Motoron
   using set_current_limit().
 
-  \param milliamps The desired current limit, in units of mA.
-  \param type Specifies what type of Motoron you are using.  This should be one
+  @param milliamps The desired current limit, in units of mA.
+  @param type Specifies what type of Motoron you are using.  This should be one
     of the members of the motoron.CurrentSenseType enum.
-  \param reference_mv The reference voltage (IOREF), in millivolts.
+  @param reference_mv The reference voltage (IOREF), in millivolts.
     For example, use 3300 for a 3.3 V system or 5000 for a 5 V system.
-  \param offset The offset of the raw current sense signal for the Motoron
+  @param offset The offset of the raw current sense signal for the Motoron
     channel.  This is the same measurement that you would put into the
     Motoron's "Current sense offset" variable using set_current_sense_offset(),
     so see the documentation of that function for more info.
@@ -1653,9 +1653,9 @@ def current_sense_units_milliamps(type, reference_mv):
   To convert a reading from get_current_sense_processed() to milliamps
   multiply it by the value returned from this function.
 
-  \param type Specifies what type of Motoron you are using.  This should be one
+  @param type Specifies what type of Motoron you are using.  This should be one
     of the members of the motoron.CurrentSenseType enum.
-  \param reference_mv The reference voltage (IOREF), in millivolts.
+  @param reference_mv The reference voltage (IOREF), in millivolts.
     For example, use 3300 for a 3.3 V system or 5000 for a 5 V system.
   """
   return reference_mv * (enum_value(type) & 3) * 25 / 512
@@ -1669,11 +1669,11 @@ class MotoronI2C(MotoronBase):
     """
     Creates a new MotoronI2C object to communicate with the Motoron over I2C.
 
-    \param bus Optional argument that specifies which I2C bus to use.
+    @param bus Optional argument that specifies which I2C bus to use.
       This can be an integer, an SMBus object from the smbus2 package, or an
       object with an interface similar to SMBus.
       The default bus is 1, which corresponds to `/dev/i2c-1`.
-    \param address Optional argument that specifies the 7-bit I2C address to
+    @param address Optional argument that specifies the 7-bit I2C address to
       use.  This must match the address that the Motoron is configured to use.
       The default address is 16.
     """
