@@ -47,10 +47,9 @@ Run the following commands to install prerequisities, download this library,
 and install this library:
 
     sudo apt install git python3-dev python3-pip
-    sudo pip3 install smbus2
     git clone https://github.com/pololu/motoron-python.git
     cd motoron-python
-    sudo python3 setup.py install
+    sudo pip3 install .
 
 You will also need to enable I&sup2;C, figure out which I&sup2;C bus to use,
 set up the I&sup2;C device permissions properly
@@ -68,10 +67,9 @@ Run the following commands to install prerequisities, download this library,
 and install this library:
 
     sudo apt install git python3-dev python3-pip
-    sudo pip3 install pyserial
     git clone https://github.com/pololu/motoron-python.git
     cd motoron-python
-    sudo python3 setup.py install
+    sudo pip3 install .
 
 You will need to make sure that your machine has a serial port that
 pySerial can connect to.  This is typically an integrated serial port that is

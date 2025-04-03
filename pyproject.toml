@@ -1,0 +1,8 @@
+[project]
+name = "motoron"
+version = "2.0.0"
+readme = "README.md"
+dependencies = ["pyserial", "smbus2"]
+
+[tool.setuptools]
+py-modules = ["motoron", "motoron_protocol"]
