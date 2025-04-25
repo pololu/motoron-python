@@ -41,11 +41,11 @@ Raspberry Pi Pico.
 
 ## Installation
 
-First, install Git and Python 3 by following the appropriate instructions for
-your operating system.  On Debian-based operating systems, for example, you
-can run:
+First, install Git, Python 3, and the Python 3 "venv" module by following the
+appropriate instructions for your operating system.
+On Debian-based operating systems, for example, you can run:
 
-    sudo apt install git python3
+    sudo apt install git python3-venv
 
 In a shell, run this command to create a Python virtual environment to
 hold this library and its dependencies.
