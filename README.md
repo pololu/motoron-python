@@ -39,37 +39,67 @@ We have mainly tested this library on Raspberry Pi single-board Linux computers
 and MicroPython-compatible RP2040 development boards such as the
 Raspberry Pi Pico.
 
-This library does **not** support Python 2.
+## Installation
+
+First, install Git and Python 3 by following the appropriate instructions for
+your operating system.  On Debian-based operating systems, for example, you
+can run:
+
+    sudo apt install git python3
+
+In a shell, run this command to create a Python virtual environment to
+hold this library and its dependencies.
+
+    python3 -m venv ~/myvenv
+
+Run the following command to add the venv to your PATH so you can easily run the
+`python3` and `pip3` commands for this virtual environment.  You will need to
+do this every time to start a new shell.
+
+    export PATH=~/myvenv/bin/:$PATH
+
+(You can test that this worked by running `which pip3`.)
+
+Download this library, and install it along with its dependencies in the
+virtual environment:
+
+    git clone https://github.com/pololu/motoron-python
+    cd motoron-python
+    pip3 install .
+
+Now you should be able to run `python3` in your shell to start a Python 3 REPL
+from the virtual environment.  In that REPL, run `import motoron`, and
+make sure it does not print any error messages.  If so, you have successfully
+installed the library.
+
+
+## Alternative installation without a virtual environment
+
+On Debian-based operating systems such as Ubuntu and Raspberry Pi OS, you can
+install the library in a simpler way without needing to make a virtual
+environment or run `pip3`.  Run the following command:
+
+    sudo apt install python3 python3-smbus2 python3-serial
+
+Now you can simply copy `motoron.py` and `motoron_protocol.py` into the same
+directory as your Python code that uses the Motoron.
+
 
 ## Getting started on Raspberry Pi OS using I&sup2;C
 
-Run the following commands to install prerequisities, download this library,
-and install this library:
-
-    sudo apt install git python3-dev python3-pip
-    git clone https://github.com/pololu/motoron-python.git
-    cd motoron-python
-    sudo pip3 install .
-
-You will also need to enable I&sup2;C, figure out which I&sup2;C bus to use,
+To successfully run this library on Raspberry Pi OS using I&sup2;C,
+you will need to enable I&sup2;C, figure out which I&sup2;C bus to use,
 set up the I&sup2;C device permissions properly
 (so you do not have to use `sudo`), and connect the Motoron to your
 Raspberry Pi's I&sup2;C bus.  If you are not sure how to do those things,
 see the "Getting started" sections of the [Motoron user's guide][guide].
 
 The examples relevant to this setup are named `i2c_*.py`.
-Run `./i2c_simple_example.py` inside the library directory to execute the
-simplest example.
+Run `python3 ./i2c_simple_example.py` inside the library directory to
+execute the simplest example.
+
 
 ## Getting started on Raspberry Pi OS using UART serial
-
-Run the following commands to install prerequisities, download this library,
-and install this library:
-
-    sudo apt install git python3-dev python3-pip
-    git clone https://github.com/pololu/motoron-python.git
-    cd motoron-python
-    sudo pip3 install .
 
 You will need to make sure that your machine has a serial port that
 pySerial can connect to.  This is typically an integrated serial port that is
