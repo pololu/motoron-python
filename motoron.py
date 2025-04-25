@@ -138,7 +138,7 @@ class MotoronBase():
 
   def enable_crc(self):
     """
-     Enables CRC for commands and responses.  See set_protocol_options().
+    Enables CRC for commands and responses.  See set_protocol_options().
     """
     self.set_protocol_options(self.protocol_options
       | (1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS)
@@ -146,7 +146,7 @@ class MotoronBase():
 
   def disable_crc(self):
     """
-     Disables CRC for commands and responses.  See set_protocol_options().
+    Disables CRC for commands and responses.  See set_protocol_options().
     """
     self.set_protocol_options(self.protocol_options
       & ~(1 << PROTOCOL_OPTION_CRC_FOR_COMMANDS)
