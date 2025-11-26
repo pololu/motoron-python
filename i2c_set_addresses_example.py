@@ -44,14 +44,23 @@ Warning: If you have devices that are not Motorons, these commands could cause
 undesired behavior.  Type "h" for more info.
 """
 
-import readline
 import sys
 import time
 import motoron
-from smbus2 import SMBus, i2c_msg
+
+# By default, we use the SMBus library to access the I2C bus at '/dev/i2c-1'.
+# That only works on Linux.
+from smbus2 import SMBus
+i2c = SMBus(1)
+
+# Alternatively, you can comment out the code above and then uncomment the
+# code below to use a Pololu USB-to-I2C Adapter.  If needed, change
+# '/dev/ttyACM0' to the serial port of the adapter (e.g. 'COM11').
+#import pololu_usb_i2c_adapter
+#i2c = pololu_usb_i2c_adapter.Adapter('/dev/ttyACM0')
 
 # Make a MotoronI2C object configured to use the general call address (0).
-mc = motoron.MotoronI2C(address=0)
+mc = motoron.MotoronI2C(bus=i2c, address=0)
 
 # The next address this program will try to use when you send an "a" command
 # to automatically assign an address.
@@ -75,15 +84,30 @@ def allow_address_communication(address):
 def allow_address_assignment(address):
   return allow_address_communication(address) and address != 0
 
+type_is_smbus = None
+
 # Checks to see if a device is responding at the specified address.
 def scan_address(address):
   if not allow_address_communication(address): return False
-  try:
-    mc.bus.i2c_rdwr(i2c_msg.write(address, []))
-    return True
-  except OSError as e:
-    if e.args[0] == 6 or e.args[0] == 121: return False
-    raise
+  global type_is_smbus
+  bus = mc.bus
+  if type_is_smbus is None:
+    type_is_smbus = (getattr(bus, 'i2c_rdwr', None) != None)
+  if type_is_smbus:
+    try:
+      bus.i2c_rdwr(mc._msg.write(address, []))
+    except OSError as e:
+      if e.args[0] == 6 or e.args[0] == 121: return False
+      raise
+  else:
+    try:
+      bus.writeto(address, b'')
+      return True
+    except RuntimeError as e:
+      if e.__class__.__name__ == 'AdapterError' and e.error_code == 8:
+        return False
+      else:
+        raise
 
 def assign_address(line):
   global next_address
@@ -147,6 +171,11 @@ def identify_devices():
       jumper_state = test.get_jumper_state() & 3
     except OSError:
       continue
+    except RuntimeError as e:
+      if e.__class__.__name__ == 'AdapterError' and e.error_code == 8:
+        continue
+      else:
+        raise
     jumper_string = ['both', 'on', 'off', 'err'][jumper_state]
     print("%3d: product=0x%04X version=%x.%02x JMP1=%s" % (i, v['product_id'],
       v['firmware_version']['major'], v['firmware_version']['minor'], jumper_string))
@@ -161,7 +190,7 @@ def process_input_line(line):
   elif line[0] == 'i': identify_devices()
   elif line[0] == 'h' or line[0] == 'H' or line[0] == '?': print(help_message)
   elif line == 'q' or line == 'quit': sys.exit(0)
-  else: print("Error: Unreocgnized command.  Type h for help.")
+  else: print("Error: Unrecognized command.  Type h for help.")
 
 print(start_message)
 try:
