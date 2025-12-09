@@ -27,11 +27,13 @@ class CurrentSenseType(Enum):
   MOTORON_24V14 = 0b0101
   MOTORON_18V20 = 0b1010
   MOTORON_24V16 = 0b1101
+  MOTORON_453   = 0b0110
 
 class VinSenseType(Enum):
   MOTORON_256 =  0b0000  # M*256 Motorons
   MOTORON_HP  =  0b0010  # High-power Motorons
   MOTORON_550 =  0b0011  # M*550 Motorons
+  MOTORON_453 =  0b0110  # M*453 Motorons
 
 class MotoronBase():
   """
@@ -863,7 +865,7 @@ class MotoronBase():
     command, so the values returned are all guaranteed to be part of the
     same measurement.
 
-    This only works for the high-power Motorons.
+    This only works for the Motorons with current sensing.
 
     @sa get_current_sense_raw_and_speed(), get_current_sense_processed_and_speed()
     """
@@ -876,7 +878,7 @@ class MotoronBase():
     This is like get_current_sense_reading() but it only reads the raw current
     sense measurement and the speed.
 
-    This only works for the high-power Motorons.
+    This only works for the Motorons with current sensing.
     """
     buffer = self.get_variables(motor, MVAR_CURRENT_SENSE_RAW, 4)
     raw, speed = struct.unpack('<Hh', buffer)
@@ -887,7 +889,7 @@ class MotoronBase():
     This is like get_current_sense_reading() but it only reads the processed
     current sense measurement and the speed.
 
-    This only works for the high-power Motorons.
+    This only works for the Motorons with current sensing.
     """
     buffer = self.get_variables(motor, MVAR_CURRENT_SENSE_SPEED, 4)
     speed, processed = struct.unpack('<hH', buffer)
@@ -897,7 +899,7 @@ class MotoronBase():
     """
     Reads the raw current sense measurement for the specified motor.
 
-    This only works for the high-power Motorons.
+    This only works for the Motorons with current sensing.
 
     For more information, see the "Current sense raw" variable
     in the Motoron user's guide.
@@ -911,14 +913,15 @@ class MotoronBase():
     """
     Reads the processed current sense reading for the specified motor.
 
-    This only works for the high-power Motorons.
+    This only works for the Motorons with current sensing.
 
     The units of this reading depend on the logic voltage of the Motoron
     and on the specific model of Motoron that you have, and you can use
     current_sense_units_milliamps() to calculate the units.
 
-    The accuracy of this reading can be improved by measuring the current
-    sense offset and setting it with set_current_sense_offset().
+    For the high-power Motorons, the accuracy of this reading can be
+    improved by measuring the current sense offset and setting it with
+    set_current_sense_offset().
     See the "Current sense processed" variable in the Motoron user's guide for
     or the current_sense_calibrate example for more information.
 
@@ -1498,7 +1501,7 @@ class MotoronBase():
     might not work.
 
     This command does not immediately cause any change to the motors: it
-    stores speed for each motor in the Motoron so they can be used by later
+    stores speeds for each motor in the Motoron so they can be used by later
     commands.
 
     For more information, see the "Set all speeds" command in the Motoron
@@ -1650,7 +1653,7 @@ def current_sense_units_milliamps(type, reference_mv):
   Calculates the units for the Motoron's current sense reading returned by
   get_current_sense_processed(), in milliamps.
 
-  To convert a reading from get_current_sense_processed() to milliamps
+  To convert a reading from get_current_sense_processed() to milliamps,
   multiply it by the value returned from this function.
 
   @param type Specifies what type of Motoron you are using.  This should be one
@@ -1658,7 +1661,10 @@ def current_sense_units_milliamps(type, reference_mv):
   @param reference_mv The reference voltage (IOREF), in millivolts.
     For example, use 3300 for a 3.3 V system or 5000 for a 5 V system.
   """
-  return reference_mv * (enum_value(type) & 3) * 25 / 512
+  if type == CurrentSenseType.MOTORON_453:
+    return reference_mv * 5 / 8448
+  else:
+    return reference_mv * (enum_value(type) & 3) * 25 / 512
 
 class MotoronI2C(MotoronBase):
   """

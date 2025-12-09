@@ -19,6 +19,7 @@ It supports the following Motoron controllers:
 - [Motoron M1U256 Single Serial Motor Controller][M1U256]
 - [Motoron M2T256 Dual I&sup2;C Motor Controller][M2T256]
 - [Motoron M2U256 Dual Serial Motor Controller][M2U256]
+- [Motoron M3T453 Triple I&sup2;C Motor Controller][M3T453]
 - [Motoron M3S256 Triple Motor Controller Shield for Arduino][M3S256]
 - [Motoron M3H256 Triple Motor Controller for Raspberry Pi][M3H256]
 - [Motoron M2S Dual High-Power Motor Controllers for Arduino][M2S] (M2S18v20, M2S18v18, M2S24v16, M2S24v14)
@@ -31,6 +32,7 @@ that has a working (including access to compatible hardware)
 version of one of the following Python libraries:
 
 - [smbus2]
+- [pololu_usb_i2c_adapter]
 - [pySerial]
 - [machine.I2C]
 - [machine.UART]
@@ -182,6 +184,8 @@ feature using motoron.MotoronBase.disable_command_timeout.
 
 ## Version history
 
+* 2.1.0 (2025-12-09):
+  - Added support for the [M3T453].
 * 2.0.0 (2023-06-09):
   - Changed the repository name from motoron-rpi to motoron-python.
   - Added MicroPython support and examples for the RP2040.
@@ -192,7 +196,7 @@ feature using motoron.MotoronBase.disable_command_timeout.
   - Added support for the new 550 class Motorons.
   - The `get_vin_voltage_mv` method now takes an optional `type` parameter to
     specify what scaling to apply.
-* 1.2.0 (2022-12-23): Added support for the [M2T256] and [M2U256] motorons.
+* 1.2.0 (2022-12-23): Added support for the [M2T256] and [M2U256] Motorons.
   This version also supports the later-released [M1T256] and [M1U256].
 * 1.1.0 (2022-08-05): Added support for the [M2S] and [M2H] Motorons.
 * 1.0.0 (2022-05-13): Original release.
@@ -208,6 +212,7 @@ feature using motoron.MotoronBase.disable_command_timeout.
 [M1U256]: https://www.pololu.com/product/5063
 [M2T256]: https://www.pololu.com/product/5065
 [M2U256]: https://www.pololu.com/product/5067
+[M3T453]: https://www.pololu.com/category/372
 [M3S256]: https://www.pololu.com/category/290
 [M3H256]: https://www.pololu.com/category/292
 [M2S]: https://www.pololu.com/category/291
@@ -218,4 +223,5 @@ feature using motoron.MotoronBase.disable_command_timeout.
 [pySerial]: https://github.com/pyserial/pyserial/
 [machine.I2C]: https://docs.micropython.org/en/latest/library/machine.I2C.html
 [machine.UART]: https://docs.micropython.org/en/latest/library/machine.UART.html
+[pololu_usb_i2c_adapter]: https://github.com/pololu/pololu-usb-i2c-adapter/tree/master/python
 [MSYS2]: https://www.msys2.org/
