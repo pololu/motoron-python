@@ -57,7 +57,7 @@ assign_communication_options = \
   (assign_14bit_device_number << motoron.COMMUNICATION_OPTION_14BIT_DEVICE_NUMBER) | \
   (assign_err_is_de << motoron.COMMUNICATION_OPTION_ERR_IS_DE)
 
-port = serial.Serial("/dev/serial0", 115200, timeout=0.01, write_timeout=0.1)
+port = serial.Serial("/dev/ttyAMA0", 115200, timeout=0.01, write_timeout=0.1)
 
 mc = motoron.MotoronSerial(port=port)
 

@@ -19,7 +19,7 @@ import serial
 import motoron
 
 mc = motoron.MotoronSerial()
-mc.set_port("/dev/serial0")
+mc.set_port("/dev/ttyAMA0")
 
 def motors_init():
   global last_time_motors_init

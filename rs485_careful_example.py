@@ -24,7 +24,7 @@ import time
 import motoron
 import serial
 
-port = serial.Serial("/dev/serial0", 115200, timeout=0.1, write_timeout=0.1)
+port = serial.Serial("/dev/ttyAMA0", 115200, timeout=0.1, write_timeout=0.1)
 
 # Define the range of Motoron device numbers to control.
 # (Note that this code does send some compact protocol commands which will

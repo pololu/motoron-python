@@ -107,16 +107,32 @@ You will need to make sure that your machine has a serial port that
 pySerial can connect to.  This is typically an integrated serial port that is
 part of your computer or a USB-to-serial adapter.
 
-On the Raspberry Pi, we recommend using `/dev/serial0`.  You can check if it
-exists by running `ls -l /dev/serial*`.
-If it does not exist, you should enable it by running
-`sudo raspi-config nonint do_serial 2` and rebooting.
-You should also add yourself to the `dialout` group by running
-`sudo usermod -a -G dialout $(whoami)`, logging out, and logging back in again.
+On the Raspberry Pi, you can enable a hardware UART serial port by
+running `sudo raspi-config`, selecting "Interface Options", and then
+selecting "Serial Port" in the menu.  If the utility asks whether you
+would like a login shell to be accessible over serial, answer "No".
+After running the utility, you will have to reboot.
+
+Run `ls -l /dev/ttyA* /dev/ttyS*` to list potentially useful serial ports.
+
+This listing should show you that the serial port is owned by the group
+`dialout`.  To avoid perimssion errors, add yourself to the `dialout` group
+by running `sudo usermod -a -G dialout $(whoami)`,
+logging out, and logging back in again.
+
+If you have a **Raspberry Pi 5**, you should see `/dev/ttyAMA0` in the listing.
+Our example code uses that serial port, so you do not need to modify the code.
+The TX pin for this port is GPIO14 and the RX pin is GPIO15.
+
+If you have a **Raspberry Pi 4**, you should see `/dev/ttyS0` in the listing
+but not `/dev/ttyAMA0`.  To successfully run any of the example serial scripts,
+replace `/dev/ttyAMA0` with `/dev/ttyS0` near the top of the script.
+By default, the TX pin for this port is GPIO14 and the RX pin is GPIO15.
 
 The examples relevant to this setup are named `serial_*.py`.
 Run `./serial_simple_example.py` inside the library directory to execute the
 simplest example.
+
 
 ## Getting started on MicroPython
 

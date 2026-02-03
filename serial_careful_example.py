@@ -16,7 +16,7 @@ import time
 import motoron
 
 mc = motoron.MotoronSerial()
-mc.set_port("/dev/serial0")
+mc.set_port("/dev/ttyAMA0")
 
 # Parameters for the VIN voltage measurement.
 reference_mv = 3300
